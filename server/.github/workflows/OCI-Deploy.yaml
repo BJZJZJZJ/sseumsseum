@@ -1,0 +1,35 @@
+name: Deploy to OCI Instance
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: github.repository == 'BJZJZJZJ/AccountBookCICD'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to OCI Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.OCI_HOST_IP }}
+          username: ${{ secrets.OCI_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Git 작업 수행
+            cd /home/ubuntu/AccountBookCICD
+
+            # nvm을 사용하여 Node.js 버전 변경
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 22
+
+            git pull origin main
+            npm install
+
+            # 2. PM2를 사용하여 애플리케이션 시작
+            npm restart
