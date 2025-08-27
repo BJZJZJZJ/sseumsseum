@@ -30,7 +30,7 @@ export default function ServiceFeatures() {
       <div className="container mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-white">
-            당신의 금융 비서, SmartBudget
+            당신의 금융 비서, 씀씀
           </h2>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
             복잡한 가계부 앱은 이제 그만. 스마트하고 직관적인 기능으로 돈 관리를 즐겁게 만들어 보세요.
