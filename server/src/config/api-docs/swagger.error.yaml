@@ -76,3 +76,14 @@ components:
               message:
                 type: string
                 example: 이미 존재하는 이메일입니다.
+
+    EmailNotVerifiedError:
+      description: 이메일 인증이 완료되지 않았습니다.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 이메일 인증이 완료되지 않았습니다.

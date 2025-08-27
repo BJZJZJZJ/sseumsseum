@@ -14,7 +14,7 @@ const { RESEND_LIMIT } = require("../middleware/rateLimit");
  * @swagger
  * /api/v1/auth/register:
  *   post:
- *     summary: 회원가입 -이메일 인증 추가 예정-
+ *     summary: 회원가입
  *     description: 이메일와 비밀번호 및 개인정보를 입력받아 회원가입을 진행합니다.
  *     tags: [(O) auth]
  *     requestBody:
@@ -26,7 +26,7 @@ const { RESEND_LIMIT } = require("../middleware/rateLimit");
  *
  *     responses:
  *       201:
- *         description: 성공적으로 회원가입이 진행되었습니다.
+ *         description: 성공적으로 회원가입이 진행되었습니다. 인증을 위한 메일이 발송됩니다.
  *         content:
  *           application/json:
  *             schema:
@@ -34,7 +34,7 @@ const { RESEND_LIMIT } = require("../middleware/rateLimit");
  *               properties:
  *                 message:
  *                   type: string
- *                   example: 회원가입이 성공했습니다.
+ *                   example: 회원가입이 성공했습니다. 인증을 위한 메일이 발송됩니다.
  *       400:
  *         $ref: '#/components/error/BadRequestError'
  *       409:
@@ -80,7 +80,7 @@ router.post(
  *         description: 성공적으로 로그인이 진행되었습니다. 액세스 토큰과 리프래시 토큰을 반환합니다.
  *         headers:
  *           Set-Cookie:
- *             description: RefreshToken 쿠키
+ *             description: RefreshToken
  *             schema:
  *               type: string
  *               example: "refreshToken=eyJhbGciOiJIUzI1NiI...; HttpOnly; Secure; SameSite=Strict"
@@ -92,13 +92,15 @@ router.post(
  *                 message:
  *                   type: string
  *                   example: 로그인 성공했습니다.
- *                 newAccessToken:
+ *                 accessToken:
  *                   type: string
  *                   example: eyJhbGciOiJIUzI1NiIsInRTEeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
  *       400:
  *         $ref: '#/components/error/BadRequestError'
  *       401:
  *         $ref: '#/components/error/UserAuthizedError'
+ *       403:
+ *         $ref: '#/components/error/EmailNotVerifiedError'
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
