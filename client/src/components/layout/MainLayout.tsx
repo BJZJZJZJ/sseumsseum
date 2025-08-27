@@ -11,7 +11,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
       <footer className="py-8 text-center text-gray-500 dark:text-gray-400">
-        <p>&copy; {new Date().getFullYear()} SmartBudget. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} 씀씀 (sseumsseum). All rights reserved.</p>
       </footer>
     </div>
   );
