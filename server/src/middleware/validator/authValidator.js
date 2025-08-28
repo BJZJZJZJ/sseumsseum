@@ -7,8 +7,8 @@ const {
 
 const validateUserCreate = [
   body("email").notEmpty().isEmail(),
-  body("password").notEmpty().isLength({ min: 4, max: 20 }),
-  body("nickname").isLength({ min: 2, max: 8 }),
+  body("password").notEmpty().isLength({ min: 6, max: 20 }),
+  body("nickname").isLength({ min: 2, max: 10 }),
   body("birth").optional().isISO8601(),
   body("gender").optional().isIn(["남", "여"]),
 

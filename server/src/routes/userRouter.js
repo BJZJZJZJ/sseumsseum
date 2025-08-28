@@ -1,5 +1,16 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
+const {
+  verifyToken,
+  verifyPasswordToken,
+} = require("../middleware/authMiddleware");
+const {
+  validationGetUser,
+  validationUpdateUser,
+  validationVerifyPassword,
+  validationUpdatePassword,
+  validationHandler,
+} = require("../middleware/validator/userValidator");
 
 /**
  * @swagger
@@ -7,9 +18,9 @@ const userController = require("../controllers/userController");
  *   get:
  *     summary: 유저 개인정보 조회
  *     description: 유저의 개인정보를 반환합니다. 토큰이 필수입니다.
- *     tags: [users]
- *     security:
- *       bearerAuth: []
+ *     tags: [(O) users]
+ *     parameters:
+ *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     responses:
  *       200:
  *         description: 유저의 개인정보를 반환합니다.
@@ -24,7 +35,13 @@ const userController = require("../controllers/userController");
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.get("/me", userController.getUserData);
+router.get(
+  "/me",
+  validationGetUser,
+  validationHandler,
+  verifyToken,
+  userController.getUserData
+);
 
 /**
  * @swagger
@@ -32,9 +49,9 @@ router.get("/me", userController.getUserData);
  *   put:
  *     summary: 비밀번호를 제외한 유저 개인정보 수정
  *     description: 유저 데이터의 새로운 정보를 입력 받아 수정합니다. 토큰이 필수입니다.
- *     tags: [users]
- *     security:
- *       bearerAuth: []
+ *     tags: [(O) users]
+ *     parameters:
+ *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     requestBody:
  *       content:
  *         application/json:
@@ -66,7 +83,13 @@ router.get("/me", userController.getUserData);
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.put("/me", userController.updateUserData);
+router.put(
+  "/me",
+  validationUpdateUser,
+  validationHandler,
+  verifyToken,
+  userController.updateUserData
+);
 
 /**
  * @swagger
@@ -74,9 +97,9 @@ router.put("/me", userController.updateUserData);
  *   post:
  *     summary: 비밀번호 체크
  *     description: 유저의 비밀번호를 통해 사용자 인증을 진행합니다. 토큰이 필수입니다.
- *     tags: [users]
- *     security:
- *       bearerAuth: []
+ *     tags: [(O) users]
+ *     parameters:
+ *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -84,9 +107,9 @@ router.put("/me", userController.updateUserData);
  *           schema:
  *             type: object
  *             required:
- *               - password
+ *               - currentPassword
  *             properties:
- *               confirmPassword:
+ *               currentPassword:
  *                 type: string
  *                 description: 기존 비밀번호
  *                 example: 1q2w3e4r!
@@ -109,17 +132,23 @@ router.put("/me", userController.updateUserData);
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.post("/me/password", userController.verifyPassword);
+router.post(
+  "/me/password",
+  validationVerifyPassword,
+  validationHandler,
+  verifyToken,
+  userController.verifyPassword
+);
 
 /**
  * @swagger
  * /api/v1/users/me/password:
  *   put:
  *     summary: 비밀번호 수정
- *     description:
- *     tags: [users]
- *     security:
- *       bearerAuth: []
+ *     description: 유저의 비밀번호를 수정합니다. 토큰이 필수입니다.
+ *     tags: [(O) users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/PasswordTokenHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -127,7 +156,8 @@ router.post("/me/password", userController.verifyPassword);
  *           schema:
  *             type: object
  *             required:
- *              - password
+ *              - newPassword
+ *              - confirmNewPassword
  *             properties:
  *               newPassword:
  *                 type: string
@@ -155,6 +185,12 @@ router.post("/me/password", userController.verifyPassword);
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.put("/me/password", userController.updatePassword);
+router.put(
+  "/me/password",
+  validationUpdatePassword,
+  validationHandler,
+  verifyPasswordToken,
+  userController.updatePassword
+);
 
 module.exports = router;

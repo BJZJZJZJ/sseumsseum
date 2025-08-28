@@ -1,5 +1,8 @@
 const jwt = require("jsonwebtoken");
-const { JWT_ACCESS_TOKEN_SECRET } = require("../config/index");
+const {
+  JWT_ACCESS_TOKEN_SECRET,
+  JWT_PASSWORD_TOKEN_SECRET,
+} = require("../config/index");
 
 // 액세스 토큰 검증 미들웨어
 const verifyToken = (req, res, next) => {
@@ -29,4 +32,35 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-module.exports = { verifyToken };
+// 비밀번호 확인 토큰 검증 미들웨어
+const verifyPasswordToken = (req, res, next) => {
+  try {
+    const passwordToken = req.headers["x-password-token"];
+
+    if (!passwordToken) {
+      return res
+        .status(401)
+        .json({ message: "비밀번호 토큰이 헤더에 존재하지 않습니다." });
+    }
+
+    const payload = jwt.verify(passwordToken, JWT_PASSWORD_TOKEN_SECRET);
+
+    // 토큰의 목적이 비밀번호 검증인지 확인
+    if (payload.purpose !== "passwordVerification") {
+      return res
+        .status(401)
+        .json({ message: "유효하지 않은 비밀번호 토큰입니다." });
+    }
+
+    // payload를 요청 객체에 담아서 다음 미들웨어로 전달
+    req.user = payload;
+    next();
+  } catch (error) {
+    console.error("비밀번호 토큰 검증 오류:", error);
+    return res
+      .status(401)
+      .json({ message: "유효하지 않은 비밀번호 토큰입니다." });
+  }
+};
+
+module.exports = { verifyToken, verifyPasswordToken };
