@@ -1,5 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import type { SubmitHandler } from 'react-hook-form';
+import axios from 'axios';
+
+import type { LoginRequestData } from '../types/api';
+import { loginUser } from '../api/authApi';
 
 // 소셜 로그인 아이콘 (SVG)
 const GoogleIcon = () => (
@@ -17,8 +23,45 @@ const KakaoIcon = () => (
     </svg>
 );
 
-
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginRequestData>({ mode: 'onBlur' });
+
+  const onSubmit: SubmitHandler<LoginRequestData> = async (data) => {
+    setIsLoading(true);
+    setApiError(null);
+
+    try {
+      const response = await loginUser(data);
+      console.log('Access Token:', response.accessToken);
+      navigate('/dashboard'); // 로그인 성공 시 대시보드 페이지로 이동
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const message = error.response?.data?.message;
+
+        if (status === 401) {
+          setApiError(message || '이메일 또는 비밀번호가 일치하지 않습니다.');
+        } else if (status === 403) {
+          setApiError(message || '이메일 인증이 완료되지 않았습니다.');
+        } else {
+          setApiError(message || '로그인 중 오류가 발생했습니다.');
+        }
+      } else {
+        setApiError('알 수 없는 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -29,7 +72,7 @@ export default function LoginPage() {
           <p className="mt-2 text-gray-600 dark:text-gray-400">다시 오신 것을 환영합니다!</p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               이메일 주소
@@ -37,13 +80,19 @@ export default function LoginPage() {
             <div className="mt-1">
               <input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                {...register('email', {
+                  required: '이메일은 필수 항목입니다.',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: '유효한 이메일 주소를 입력해주세요.',
+                  },
+                })}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ${errors.email ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                 placeholder="you@example.com"
               />
+               {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
             </div>
           </div>
 
@@ -54,13 +103,13 @@ export default function LoginPage() {
             <div className="mt-1">
               <input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                {...register('password', { required: '비밀번호는 필수 항목입니다.' })}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ${errors.password ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                 placeholder="********"
               />
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
             </div>
           </div>
 
@@ -78,9 +127,15 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {apiError && <p className="text-sm text-red-500 text-center">{apiError}</p>}
+
           <div>
-            <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              로그인
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? '로그인 중...' : '로그인'}
             </button>
           </div>
         </form>
@@ -115,3 +170,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

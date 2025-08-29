@@ -18,21 +18,15 @@ export interface RegisterRequestData {
 }
 
 // /auth/login (로그인)
-export interface LoginData {
+export interface LoginRequestData {
   email: string;
   password: string;
 }
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  nickname: string;
-}
-
-export interface AuthResponse {
-  user: UserProfile;
+// 로그인 성공 응답 타입
+export interface LoginResponse {
+  message: string;
   accessToken: string;
-  refreshToken: string;
 }
 
 // /auth/refresh (토큰 갱신)
@@ -45,4 +39,3 @@ export interface RefreshResponse {
 export interface ResendRequest {
   email: string;
 }
-

@@ -1,58 +1,66 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // <a> 태그 대신 Link를 사용합니다.
+import { Link, useNavigate } from 'react-router-dom';
+import { logoutUser } from '../api/authApi';
+
+// TODO: 이 값은 나중에 Zustand나 Context API 같은 전역 상태 관리 라이브러리에서 가져와야 합니다.
+const DUMMY_IS_LOGGED_IN = false; // 현재 로그인 상태라고 가정
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    // 사용자에게 로그아웃 여부를 다시 한번 확인받습니다.
+    if (!window.confirm('정말 로그아웃 하시겠습니까?')) return;
+
+    try {
+      await logoutUser();
+      // TODO: 전역 저장소에서 사용자 상태(토큰 등)를 제거하는 로직 추가
+      alert('로그아웃 되었습니다.');
+      navigate('/'); // 로그아웃 후 홈으로 이동
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      alert('로그아웃 처리 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
-    <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-      <nav className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+    <header className="bg-gray-800 border-b border-gray-700">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex-shrink-0">
+            <Link to="/" className="text-2xl font-bold text-white hover:text-gray-300">
               씀씀 (sseumsseum)
-            </span>
-          </Link>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">기능</a>
-            <a href="#pricing" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">요금제</a>
-            <a href="#contact" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">문의</a>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login" className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              로그인
-            </Link>
-            <Link to="/signup" className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow">
-              가입하기
             </Link>
           </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-600 dark:text-gray-300 focus:outline-none">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}></path>
-              </svg>
-            </button>
+          <div className="flex items-center space-x-4">
+            {DUMMY_IS_LOGGED_IN ? (
+              // 로그인 상태일 때 로그아웃 버튼 표시
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              >
+                로그아웃
+              </button>
+            ) : (
+              // 로그아웃 상태일 때 로그인/가입 버튼 표시
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-gray-300 hover:text-white"
+                >
+                  로그인
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
+                >
+                  가입하기
+                </Link>
+              </>
+            )}
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-4">
-            <a href="#features" className="block py-2 px-4 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">기능</a>
-            <a href="#pricing" className="block py-2 px-4 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">요금제</a>
-            <a href="#contact" className="block py-2 px-4 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">문의</a>
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Link to="/login" className="block py-2 px-4 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">로그인</Link>
-              <Link to="/signup" className="block w-full text-left mt-2 py-2 px-4 text-sm text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">가입하기</Link>
-            </div>
-          </div>
-        )}
       </nav>
     </header>
   );
 }
+

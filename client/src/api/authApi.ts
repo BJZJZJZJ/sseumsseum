@@ -3,8 +3,8 @@ import axiosInstance from './axiosInstance';
 import type { 
   SignupFormData,
   RegisterRequestData, 
-  LoginData, 
-  AuthResponse, 
+  LoginRequestData, 
+  LoginResponse, 
   RefreshResponse,
   ResendRequest
 } from '../types/api';
@@ -28,8 +28,8 @@ export const registerUser = async (formData: SignupFormData): Promise<void> => {
  * POST /auth/login
  * 로그인을 요청합니다.
  */
-export const loginUser = async (data: LoginData): Promise<AuthResponse> => {
-  const response = await axiosInstance.post<AuthResponse>('/auth/login', data);
+export const loginUser = async (data: LoginRequestData): Promise<LoginResponse> => {
+  const response = await axiosInstance.post<LoginResponse>('/auth/login', data);
   return response.data;
 };
 
