@@ -6,7 +6,6 @@ const RefreshToken = require("../models/RefreshToken");
 const { hashPassword, comparePassword } = require("../utils/password");
 const { JWT_PASSWORD_TOKEN_SECRET } = require("../config/index");
 const { createAccessToken, createRefreshToken } = require("../utils/jwt");
-const { act } = require("react");
 
 // 유저의 개인정보 조회
 const getUserData = async (req, res) => {
@@ -107,8 +106,9 @@ const updatePassword = async (req, res) => {
 
     // 비밀번호 수정완료 후 비밀번호 토큰 파기 -> 클라이언트 몫
     // 로그인 상태 유지? -> refresh token 모두 삭제 후 재발급
-    const newAccessToken = createAccessToken(user);
-    const newRefreshToken = createRefreshToken(user);
+
+    const newAccessToken = createAccessToken({ id: user._id, role: user.role });
+    const newRefreshToken = createRefreshToken({ id: user._id });
 
     await RefreshToken.deleteMany({ userId: userId });
     await RefreshToken.create({ userId: userId, token: newRefreshToken });
