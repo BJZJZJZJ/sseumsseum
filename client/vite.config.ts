@@ -8,4 +8,12 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://158.180.84.232:44445', // 실제 API 서버 주소
+        changeOrigin: true, 
+      },
+    },
+  },
 })
