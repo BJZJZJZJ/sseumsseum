@@ -2,8 +2,11 @@ const { matchedData } = require("express-validator");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
+const RefreshToken = require("../models/RefreshToken");
 const { hashPassword, comparePassword } = require("../utils/password");
 const { JWT_PASSWORD_TOKEN_SECRET } = require("../config/index");
+const { createAccessToken, createRefreshToken } = require("../utils/jwt");
+const { act } = require("react");
 
 // 유저의 개인정보 조회
 const getUserData = async (req, res) => {
@@ -102,11 +105,26 @@ const updatePassword = async (req, res) => {
       return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
     }
 
-    // 비밀번호 수정 후 비밀번호 토큰 파기 -> 클라이언트 몫
+    // 비밀번호 수정완료 후 비밀번호 토큰 파기 -> 클라이언트 몫
+    // 로그인 상태 유지? -> refresh token 모두 삭제 후 재발급
+    const newAccessToken = createAccessToken(user);
+    const newRefreshToken = createRefreshToken(user);
 
-    // 리프래시 토큰 및 액세스 토큰 재발급
+    await RefreshToken.deleteMany({ userId: userId });
+    await RefreshToken.create({ userId: userId, token: newRefreshToken });
+    res.clearCookie("refreshToken");
 
-    res.status(200).json({ message: "비밀번호 수정 성공" });
+    // 새로운 리프레시 토큰 쿠키 설정
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    res
+      .status(200)
+      .json({ message: "비밀번호 수정 성공", accessToken: newAccessToken });
   } catch (error) {
     console.error("비밀번호 수정 오류:", error);
     return res.status(500).json({ message: "서버 오류가 발생했습니다." });
