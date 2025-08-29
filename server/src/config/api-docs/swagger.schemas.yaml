@@ -1,0 +1,117 @@
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - email
+        - password
+        - nickname
+      properties:
+        email:
+          type: string
+          description: 사용자 email
+          example: testemail@google.com
+        password:
+          type: string
+          description: 사용자 비밀번호
+          example: 1q2w3e4r!
+        nickname:
+          type: string
+          description: 사용자 닉네임
+          example: 씀씀이용자
+        birth:
+          type: string # 타입은 string
+          format: date # 💡 format: date로 날짜 형식 지정
+          description: 사용자 생일 (YYYY-MM-DD)
+          example: "1995-12-25"
+        gender:
+          type: string
+          description: 사용자 성별
+          example: 남
+
+    Asset:
+      type: object
+      properties:
+        asset_name:
+          type: string
+          description: 자산 이름
+          example: KB국민은행 계좌
+        asset_type:
+          type: string
+          description: 자산 종류
+          example: 적금계좌
+        asset_amount:
+          type: number
+          description: 자산 금액
+          example: 300000
+
+    Budget:
+      type: object
+      properties:
+        budget_name:
+          type: string
+          description: 예산 이름
+          example: 10월 예산
+        budget_month:
+          type: string
+          description: 예산 월
+          example: "2023-10"
+        budget_total:
+          type: Number
+          description: 총 예산 금액
+          example: 10000000
+
+        budget_categories:
+          type: array
+          items:
+            type: object
+            properties:
+              category_id:
+                type: string
+                description: 카테고리 ID
+                example: 5a76gfq23raf6glkaef
+              budget_amount:
+                type: number
+                description: 카테고리별 예산 금액
+                example: 2000000
+
+    Category:
+      type: object
+      properties:
+        category_name:
+          type: string
+          description: 카테고리 이름
+          example: 식비
+        category_type:
+          type: string
+          description: 카테고리 종류 (수입/지출)
+          example: 지출
+
+    Transaction:
+      type: object
+      properties:
+        transaction_name:
+          type: string
+          description: 거래내역 이름
+          example: 점심 식사
+        transaction_amount:
+          type: number
+          description: 거래 금액
+          example: 15000
+        transaction_type:
+          type: string
+          description: 거래 종류 (수입/지출)
+          example: 지출
+        transaction_datetime:
+          type: string # 타입은 string
+          format: date # 💡 format: date로 날짜 형식 지정
+          description: 거래 날짜 (YYYY-MM-DD)
+          example: "2023-10-01 hh:mm:ss"
+        transaction_assetId:
+          type: string
+          description: 거래 자산 ID
+          example: 1234567890abcdef
+        transaction_category_id:
+          type: string
+          description: 카테고리 ID
+          example: 5a76gfq23raf6glkaef
