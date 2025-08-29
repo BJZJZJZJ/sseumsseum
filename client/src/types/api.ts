@@ -1,10 +1,20 @@
-// /auth/register (회원가입)
-export interface RegisterData {
+// 회원가입 페이지 폼 데이터 타입
+export interface SignupFormData {
+  email: string,
+  password: string,
+  confirmPassword: string,
+  nickname: string,
+  birthdate: string,
+  gender: '남' | '여'
+}
+
+// POST /auth/register 요청 본문 타입
+export interface RegisterRequestData {
   email: string;
   password: string;
   nickname: string;
-  birthdate: string; // YYYY-MM-DD
-  gender: 'male' | 'female';
+  birth: string; // YYYY-MM-DD
+  gender: '남' | '여';
 }
 
 // /auth/login (로그인)

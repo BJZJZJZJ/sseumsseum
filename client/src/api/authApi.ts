@@ -1,7 +1,8 @@
 import axiosInstance from './axiosInstance';
 // src/types/api.ts에서 필요한 타입들을 { } 안에 명시하여 가져옵니다.
 import type { 
-  RegisterData, 
+  SignupFormData,
+  RegisterRequestData, 
   LoginData, 
   AuthResponse, 
   RefreshResponse,
@@ -12,8 +13,15 @@ import type {
  * POST /auth/register
  * 회원가입을 요청합니다.
  */
-export const registerUser = async (data: RegisterData): Promise<void> => {
-  await axiosInstance.post('/auth/register', data);
+export const registerUser = async (formData: SignupFormData): Promise<void> => {
+  const apiData: RegisterRequestData = {
+    email: formData.email,
+    password: formData.password,
+    nickname: formData.nickname,
+    birth: formData.birthdate,
+    gender: formData.gender
+  }
+  await axiosInstance.post('/auth/register', apiData);
 };
 
 /**
