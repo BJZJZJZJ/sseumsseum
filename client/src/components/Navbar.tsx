@@ -1,11 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { logoutUser } from '../api/authApi';
-
-// TODO: 이 값은 나중에 Zustand나 Context API 같은 전역 상태 관리 라이브러리에서 가져와야 합니다.
-const DUMMY_IS_LOGGED_IN = false; // 현재 로그인 상태라고 가정
+import useAuthStore from '../store/authStore';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  // Zustand 스토어에서 로그인 상태와 로그아웃 함수를 가져옵니다.
+  const { isLoggedIn, logout } = useAuthStore();
 
   const handleLogout = async () => {
     // 사용자에게 로그아웃 여부를 다시 한번 확인받습니다.
@@ -13,12 +13,15 @@ export default function Navbar() {
 
     try {
       await logoutUser();
-      // TODO: 전역 저장소에서 사용자 상태(토큰 등)를 제거하는 로직 추가
+      logout(); // 스토어의 상태를 로그아웃으로 변경합니다.
       alert('로그아웃 되었습니다.');
       navigate('/'); // 로그아웃 후 홈으로 이동
     } catch (error) {
       console.error('로그아웃 실패:', error);
-      alert('로그아웃 처리 중 오류가 발생했습니다.');
+      // 토큰 만료 등의 이유로 서버에서 로그아웃 실패 시에도 클라이언트 상태는 로그아웃 처리
+      logout();
+      alert('로그아웃 처리 중 오류가 발생했습니다. 클라이언트의 로그인 정보를 삭제합니다.');
+      navigate('/');
     }
   };
 
@@ -32,7 +35,7 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            {DUMMY_IS_LOGGED_IN ? (
+            {isLoggedIn ? (
               // 로그인 상태일 때 로그아웃 버튼 표시
               <button
                 onClick={handleLogout}

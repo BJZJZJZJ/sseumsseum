@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import type { LoginRequestData } from '../types/api';
 import { loginUser } from '../api/authApi';
+import useAuthStore from '../store/authStore';
 
 // 소셜 로그인 아이콘 (SVG)
 const GoogleIcon = () => (
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const { login } = useAuthStore(); // Zustand 스토어에서 login 액션을 가져옵니다.
 
   const {
     register,
@@ -40,6 +42,7 @@ export default function LoginPage() {
 
     try {
       const response = await loginUser(data);
+      login(response.accessToken); // 로그인 성공 시, 스토어에 토큰을 저장합니다.
       console.log('Access Token:', response.accessToken);
       navigate('/dashboard'); // 로그인 성공 시 대시보드 페이지로 이동
     } catch (error) {
