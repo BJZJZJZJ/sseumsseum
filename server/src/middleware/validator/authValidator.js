@@ -30,7 +30,7 @@ const validateLogin = [
   checkExact([], { message: "입력한 값이 올바르지 않습니다." }),
 ];
 
-const validationRefreshToken = [check("refreshToken").notEmpty()];
+const validateRefreshToken = [check("refreshToken").notEmpty()];
 
 const validationHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -45,6 +45,6 @@ module.exports = {
   validateResendMail,
   validateVerifyEmail,
   validateLogin,
-  validationRefreshToken,
+  validateRefreshToken,
   validationHandler,
 };

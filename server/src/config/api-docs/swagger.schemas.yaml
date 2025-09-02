@@ -78,14 +78,14 @@ components:
     Category:
       type: object
       properties:
-        category_name:
+        name:
           type: string
           description: 카테고리 이름
           example: 식비
-        category_type:
+        type:
           type: string
-          description: 카테고리 종류 (수입/지출)
-          example: 지출
+          description: 카테고리 종류 (income / expense)
+          example: expense
 
     Transaction:
       type: object

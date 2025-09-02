@@ -16,6 +16,7 @@ const categorySchema = new mongoose.Schema({
     required: true,
   },
 
+  // 기본 제공 카테고리 여부
   isDefault: {
     type: Boolean,
     required: true,

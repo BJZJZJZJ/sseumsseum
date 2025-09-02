@@ -6,13 +6,13 @@ const transactionSchema = new mongoose.Schema({
     ref: "Users",
     required: true,
   },
-
+  /*
   assetId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Assets",
     required: true,
   },
-
+  */
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Categories",

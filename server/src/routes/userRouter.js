@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
 const {
-  verifyToken,
+  verifyAccessToken,
   verifyPasswordToken,
 } = require("../middleware/authMiddleware");
 const {
@@ -39,7 +39,7 @@ router.get(
   "/me",
   validationGetUser,
   validationHandler,
-  verifyToken,
+  verifyAccessToken,
   userController.getUserData
 );
 
@@ -87,7 +87,7 @@ router.put(
   "/me",
   validationUpdateUser,
   validationHandler,
-  verifyToken,
+  verifyAccessToken,
   userController.updateUserData
 );
 
@@ -136,7 +136,7 @@ router.post(
   "/me/password",
   validationVerifyPassword,
   validationHandler,
-  verifyToken,
+  verifyAccessToken,
   userController.verifyPassword
 );
 

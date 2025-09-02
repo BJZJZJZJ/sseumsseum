@@ -5,7 +5,7 @@ const {
 } = require("../config/index");
 
 // 액세스 토큰 검증 미들웨어
-const verifyToken = (req, res, next) => {
+const verifyAccessToken = (req, res, next) => {
   try {
     // Authorization 헤더에서 토큰 추출
     const authHeader = req.headers["authorization"];
@@ -63,4 +63,4 @@ const verifyPasswordToken = (req, res, next) => {
   }
 };
 
-module.exports = { verifyToken, verifyPasswordToken };
+module.exports = { verifyAccessToken, verifyPasswordToken };

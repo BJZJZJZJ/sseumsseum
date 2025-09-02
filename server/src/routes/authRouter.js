@@ -3,7 +3,7 @@ const authController = require("../controllers/authController");
 const {
   validateUserCreate,
   validateLogin,
-  validationRefreshToken,
+  validateRefreshToken,
   validateResendMail,
   validateVerifyEmail,
   validationHandler,
@@ -135,7 +135,7 @@ router.post("/login", validateLogin, validationHandler, authController.login);
  */
 router.post(
   "/logout",
-  validationRefreshToken,
+  validateRefreshToken,
   validationHandler,
   authController.logout
 );
@@ -178,7 +178,7 @@ router.post(
  */
 router.post(
   "/refresh",
-  validationRefreshToken,
+  validateRefreshToken,
   validationHandler,
   authController.updateToken
 );

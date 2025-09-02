@@ -17,3 +17,21 @@ components:
         type: string
         description: Bearer {access_token}
         example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZTc5Y2EwLTU3YzAtNDAxMi1iYjYxLTYyY2E3YjYyY2E3NyIsImlhdCI6MTcwMTI3MjM5NSwiZXhwIjoxNzAxMjc0Mzk1fQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+    PageQuery:
+      in: query
+      name: page
+      required: true
+      schema:
+        type: integer
+        description: 페이지 번호 (1부터 시작)
+        example: 1
+
+    LimitQuery:
+      in: query
+      name: limit
+      required: true
+      schema:
+        type: integer
+        description: 페이지당 항목 수
+        example: 10

@@ -39,6 +39,7 @@ const updateUserData = async (req, res) => {
         nickname: nickname,
         birth: birth,
         gender: gender,
+        updatedAt: Date.now(),
       },
       { new: true }
     ).select("email nickname birth gender"); // 비밀번호 제외하고 조회
@@ -96,7 +97,7 @@ const updatePassword = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { password_hash: hashedPassword },
+      { password_hash: hashedPassword, updatedAt: Date.now() },
       { new: true }
     );
 
@@ -128,6 +129,27 @@ const updatePassword = async (req, res) => {
   } catch (error) {
     console.error("비밀번호 수정 오류:", error);
     return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.user.id; // authMiddleware에서 설정한 user 정보 사용
+
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
+    }
+    // 관련된 모든 리프레시 토큰 삭제
+    await RefreshToken.deleteMany({
+      userId: userId,
+    });
+    res.clearCookie("refreshToken");
+    res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
+  } catch (error) {
+    console.error("회원 탈퇴 오류:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
 
