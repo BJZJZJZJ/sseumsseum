@@ -98,28 +98,28 @@ components:
     TransactionResponse:
       type: object
       properties:
-        transaction_name:
-          type: string
-          description: 거래내역 이름
-          example: 점심 식사
-        transaction_amount:
+        amount:
           type: number
           description: 거래 금액
           example: 15000
-        transaction_type:
+        method:
+          type: string
+          description: 거래 방법
+          example: cash
+        type:
           type: string
           description: 거래 종류 (수입/지출)
-          example: 지출
-        transaction_datetime:
-          type: string # 타입은 string
-          format: date # 💡 format: date로 날짜 형식 지정
+          example: expense
+        description:
+          type: string
+          description: 거래내역 이름
+          example: 점심 식사
+        datetime:
+          type: string
+          format: date
           description: 거래 시간 (YYYY-MM-DD)
-          example: "2023-10-01 hh:mm:ss"
-        transaction_assetId:
+          example: "2025-05-23T05:43:45.000Z"
+        category:
           type: string
-          description: 거래 자산 ID
-          example: 1234567890abcdef
-        transaction_category_id:
-          type: string
-          description: 카테고리 ID
-          example: 5a76gfq23raf6glkaef
+          description: 카테고리
+          example: 식비

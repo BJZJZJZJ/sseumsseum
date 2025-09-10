@@ -24,6 +24,13 @@ const transactionSchema = new mongoose.Schema({
     required: true,
   },
 
+  method: {
+    type: String,
+    enum: ["cash", "card", "transfer", "other"],
+    default: "other",
+    required: false,
+  },
+
   type: {
     type: String,
     enum: ["income", "expense"],
