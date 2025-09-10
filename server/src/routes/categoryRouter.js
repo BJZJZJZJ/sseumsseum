@@ -87,8 +87,10 @@ router.post(
  *      - in: path
  *        name: id
  *        required: true
- *        example: 60c72b2f9b1e8d3f4c8b4567
- *        description: 카테고리의 ID
+ *        description: 카테고리 ID
+ *        schema:
+ *          type: string
+ *          example: 60c72b2f9b1e8d3f4c8b4567
  *     requestBody:
  *       content:
  *         application/json:
@@ -129,8 +131,10 @@ router.put(
  *      - in: path
  *        name: id
  *        required: true
- *        example: 60c72b2f9b1e8d3f4c8b4567
- *        description: 카테고리의 ID
+ *        description: 카테고리 ID
+ *        schema:
+ *          type: string
+ *          example: 60c72b2f9b1e8d3f4c8b4567
  *     responses:
  *       200:
  *         description: 카테고리가 성공적으로 삭제되었습니다.

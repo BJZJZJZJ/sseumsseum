@@ -15,7 +15,7 @@ const validateCategory = [
 const validateGetCategories = [
   header("Authorization").notEmpty(),
   query("page").optional().isInt({ min: 1 }),
-  query("limit").optional().isInt({ min: 1, max: 30 }),
+  query("limit").optional().isInt({ min: 10, max: 20 }),
 ];
 
 const validateParamId = [
