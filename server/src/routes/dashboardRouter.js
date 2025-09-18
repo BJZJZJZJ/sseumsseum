@@ -10,6 +10,8 @@ const { verifyAccessToken } = require("../middleware/authMiddleware");
  *     summary: 대시보드 조회
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *       200:
  *         description: 대시보드에 필요한 데이터값을 반환합니다. (이번달, 저번달 거래내역 / 카테고리별 지출 등)

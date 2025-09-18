@@ -22,6 +22,8 @@ const {
  *     tags: [(O) users]
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *       200:
  *         description: 유저의 개인정보를 반환합니다.
@@ -53,6 +55,8 @@ router.get(
  *     tags: [(O) users]
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -101,6 +105,8 @@ router.put(
  *     tags: [(O) users]
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

@@ -15,6 +15,8 @@ const categoryValidator = require("../middleware/validator/categoryValidator");
  *      - $ref: '#/components/parameters/AccessTokenHeader'
  *      - $ref: '#/components/parameters/PageQuery'
  *      - $ref: '#/components/parameters/LimitQuery'
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *       200:
  *         description: 이용자가 소유한 카테고리 목록을 반환합니다.
@@ -49,6 +51,8 @@ router.get(
  *     tags: [(O) categories]
  *     parameters:
  *       - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -91,6 +95,8 @@ router.post(
  *        schema:
  *          type: string
  *          example: 60c72b2f9b1e8d3f4c8b4567
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -135,6 +141,8 @@ router.put(
  *        schema:
  *          type: string
  *          example: 60c72b2f9b1e8d3f4c8b4567
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *       200:
  *         description: 카테고리가 성공적으로 삭제되었습니다.

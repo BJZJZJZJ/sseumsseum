@@ -11,6 +11,8 @@ const validator = require("../middleware/validator/transactionValidator");
  *   get:
  *     summary: 거래내역 조회
  *     description: 이용자의 거래 내역을 조회합니다. 토큰이 필수입니다. 날짜 필터가 없는 경우, 최신 순으로 조회됩니다.
+ *     security:
+ *      - bearerAuth: []
  *     parameters:
  *      - in: header
  *        name: Authorization
@@ -63,8 +65,6 @@ const validator = require("../middleware/validator/transactionValidator");
  *          example: income
  *        required: false
  *     tags: [(O) transactions]
- *     security:
- *       bearerAuth: []
  *     responses:
  *       200:
  *         description: 이용자의 거래 내역이 성공적으로 조회되었습니다.
@@ -119,6 +119,8 @@ router.get(
  *     tags: [(O) transactions]
  *     parameters:
  *       - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -176,6 +178,8 @@ router.post(
  *          type: string
  *          description: Bearer {access_token}
  *          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -235,6 +239,8 @@ router.put(
  *          type: string
  *          description: Bearer {access_token}
  *          example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e
+ *     security:
+ *      - bearerAuth: []
  *     responses:
  *       200:
  *         description: 거래내역이 성공적으로 삭제되었습니다.
@@ -274,6 +280,8 @@ router.delete(
  *     tags: [(O) transactions]
  *     parameters:
  *       - $ref: '#/components/parameters/AccessTokenHeader'
+ *     security:
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         multipart/form-data:
