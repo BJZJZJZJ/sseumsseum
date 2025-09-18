@@ -33,6 +33,11 @@ const validationUpdatePassword = [
   checkExact([], { message: "입력한 값이 올바르지 않습니다." }),
 ];
 
+const validationDeleteUser = [
+  header("X-Password-Token").notEmpty(),
+  checkExact([], { message: "입력한 값이 올바르지 않습니다." }),
+];
+
 const validationHandler = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -46,5 +51,6 @@ module.exports = {
   validationUpdateUser,
   validationVerifyPassword,
   validationUpdatePassword,
+  validationDeleteUser,
   validationHandler,
 };

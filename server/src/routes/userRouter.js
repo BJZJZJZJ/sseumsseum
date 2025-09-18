@@ -9,6 +9,7 @@ const {
   validationUpdateUser,
   validationVerifyPassword,
   validationUpdatePassword,
+  validationDeleteUser,
   validationHandler,
 } = require("../middleware/validator/userValidator");
 
@@ -116,6 +117,12 @@ router.put(
  *     responses:
  *       200:
  *         description: 비밀번호 인증 성공
+ *         headers:
+ *           X-password-token:
+ *             description: 비밀번호 수정을 위한 인증 토큰
+ *             schema:
+ *               type: string
+ *               example: "X-password-token=eyJhbGciOiJIUzI1NiI...; HttpOnly; Secure; SameSite=Strict"
  *         content:
  *           application/json:
  *             schema:
@@ -170,6 +177,12 @@ router.post(
  *     responses:
  *       200:
  *         description:
+ *         headers:
+ *           Set-Cookie:
+ *             description: RefreshToken
+ *             schema:
+ *               type: string
+ *               example: "refreshToken=eyJhbGciOiJIUzI1NiI...; HttpOnly; Secure; SameSite=Strict"
  *         content:
  *           application/json:
  *             schema:
@@ -178,6 +191,9 @@ router.post(
  *                 message:
  *                  type: string
  *                  example: 비밀번호 수정 성공
+ *                 accessToken:
+ *                  type: string
+ *                  example: awrekjghawkjytjhoi3w4678q2agrjh2a
  *       400:
  *         $ref: '#/components/error/BadRequestError'
  *       401:
@@ -191,6 +207,41 @@ router.put(
   validationHandler,
   verifyPasswordToken,
   userController.updatePassword
+);
+
+/**
+ * @swagger
+ * /api/v1/users/me/:
+ *   delete:
+ *     summary: 회원탈퇴
+ *     description: 회원 탈퇴를 진행합니다. 비밀번호 인증 후 API 호출이 가능합니다. DB에서 관련 데이터가 모두 지워집니다. (하드삭제)
+ *     tags: [(O) users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/PasswordTokenHeader'
+ *     responses:
+ *       200:
+ *         description:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                  type: string
+ *                  example: 회원탈퇴가 완료되었습니다.
+ *       400:
+ *         $ref: '#/components/error/BadRequestError'
+ *       401:
+ *         $ref: '#/components/error/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/error/ServerError'
+ */
+router.delete(
+  "/me",
+  validationDeleteUser,
+  validationHandler,
+  verifyPasswordToken,
+  userController.deleteUser
 );
 
 module.exports = router;

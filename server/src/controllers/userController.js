@@ -3,6 +3,10 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 const RefreshToken = require("../models/RefreshToken");
+const Budget = require("../models/RefreshToken");
+const Category = require("../models/Category");
+const Transaction = require("../models/Transaction");
+
 const { hashPassword, comparePassword } = require("../utils/password");
 const { JWT_PASSWORD_TOKEN_SECRET } = require("../config/index");
 const { createAccessToken, createRefreshToken } = require("../utils/jwt");
@@ -62,28 +66,33 @@ const verifyPassword = async (req, res) => {
 
   const user = await User.findById(userId); // 비밀번호 확인을 위해 해시된 비밀번호 포함 조회
 
-  if (!user) {
-    return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
+  try {
+    if (!user) {
+      return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
+    }
+
+    // 비밀번호 검증
+    const isMatch = await comparePassword(currentPassword, user.password_hash);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    }
+
+    // 비밀번호 확인 토큰 생성 (짧은 유효기간)
+    const passwordToken = jwt.sign(
+      { id: user._id, purpose: "passwordVerification" },
+      JWT_PASSWORD_TOKEN_SECRET,
+      { expiresIn: "10m" } // 10분 동안 유효
+    );
+
+    // 토큰을 응답 헤더에 포함
+    res.setHeader("X-Password-Token", passwordToken);
+
+    return res.status(200).json({ message: "비밀번호 확인 성공" });
+  } catch (e) {
+    res.status(500).json({ message: "서버 에러" });
+    console.error(e);
   }
-
-  // 비밀번호 검증
-  const isMatch = await comparePassword(currentPassword, user.password_hash);
-
-  if (!isMatch) {
-    return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
-  }
-
-  // 비밀번호 확인 토큰 생성 (짧은 유효기간)
-  const passwordToken = jwt.sign(
-    { id: user._id, purpose: "passwordVerification" },
-    JWT_PASSWORD_TOKEN_SECRET,
-    { expiresIn: "10m" } // 10분 동안 유효
-  );
-
-  // 토큰을 응답 헤더에 포함
-  res.setHeader("X-Password-Token", passwordToken);
-
-  return res.status(200).json({ message: "비밀번호 확인 성공" });
 };
 
 // 비밀번호 수정 (현재 비밀번호 확인 후 수정)
@@ -141,11 +150,15 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
     }
-    // 관련된 모든 리프레시 토큰 삭제
-    await RefreshToken.deleteMany({
-      userId: userId,
-    });
+
     res.clearCookie("refreshToken");
+
+    // DB에서 user 관련 데이터 전부 삭제
+    await RefreshToken.deleteMany({ userId: userId });
+    await Budget.deleteMany({ userId: userId });
+    await Category.deleteMany({ userId: userId });
+    await Transaction.deleteMany({ userId: userId });
+
     res.status(200).json({ message: "회원 탈퇴가 완료되었습니다." });
   } catch (error) {
     console.error("회원 탈퇴 오류:", error);
@@ -159,4 +172,5 @@ module.exports = {
 
   verifyPassword,
   updatePassword,
+  deleteUser,
 };
