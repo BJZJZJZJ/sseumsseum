@@ -5,7 +5,7 @@ const { verifyAccessToken } = require("../middleware/authMiddleware");
  * @swagger
  * /api/v1/dashboard/:
  *   get:
- *     tags: [(O) Dashboard]
+ *     tags: [Dashboard]
  *     description: 대시보드 관련 API
  *     summary: 대시보드 조회
  *     parameters:
@@ -13,141 +13,83 @@ const { verifyAccessToken } = require("../middleware/authMiddleware");
  *     security:
  *      - bearerAuth: []
  *     responses:
- *       200:
- *         description: 대시보드에 필요한 데이터값을 반환합니다. (이번달, 저번달 거래내역 / 카테고리별 지출 등)
+ *       '200':
+ *         description: 성공적으로 대시보드 데이터를 조회했습니다.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 lastMonth:
- *                   type: object
- *                   properties:
- *                     expense:
- *                       type: object
- *                       properties:
- *                         category:
- *                           type: object
- *                           properties:
- *                             기타:
- *                               type: number
- *                               example: 140000
- *                             문화:
- *                               type: number
- *                               example: 50000
- *                             식비:
- *                               type: number
- *                               example: 140000
- *                         daily:
- *                           type: object
- *                           properties:
- *                             1:
- *                               type: number
- *                               example: 2500
- *                             15:
- *                               type: number
- *                               example: 33000
- *                             30:
- *                               type: number
- *                               example: 2700000
- *                         total:
- *                           type: number
- *                           example: 250000
- *                     income:
- *                       type: object
- *                       properties:
- *                         category:
- *                           type: object
- *                           properties:
- *                             기타:
- *                               type: number
- *                               example: 140000
- *                             월급:
- *                               type: number
- *                               example: 50000000
- *                         daily:
- *                           type: object
- *                           properties:
- *                             1:
- *                               type: number
- *                               example: 2500
- *                             15:
- *                               type: number
- *                               example: 33000
- *                             30:
- *                               type: number
- *                               example: 2700000
- *                         total:
- *                           type: number
- *                           example: 250000
- *                 thisMonth:
- *                   type: object
- *                   properties:
- *                     expense:
- *                       type: object
- *                       properties:
- *                         category:
- *                           type: object
- *                           properties:
- *                             기타:
- *                               type: number
- *                               example: 140000
- *                             문화:
- *                               type: number
- *                               example: 50000
- *                             식비:
- *                               type: number
- *                               example: 140000
- *                         daily:
- *                           type: object
- *                           properties:
- *                             1:
- *                               type: number
- *                               example: 2500
- *                             15:
- *                               type: number
- *                               example: 33000
- *                             30:
- *                               type: number
- *                               example: 2700000
- *                         total:
- *                           type: number
- *                           example: 250000
- *                     income:
- *                       type: object
- *                       properties:
- *                         category:
- *                           type: object
- *                           properties:
- *                             기타:
- *                               type: number
- *                               example: 140000
- *                             월급:
- *                               type: number
- *                               example: 50000
- *                         daily:
- *                           type: object
- *                           properties:
- *                             1:
- *                               type: number
- *                               example: 2500
- *                             15:
- *                               type: number
- *                               example: 33000
- *                             30:
- *                               type: number
- *                               example: 2700000
- *                         total:
- *                           type: number
- *                           example: 250000
- *                 advice:
+ *                 message:
  *                   type: string
- *                   example: "지난 달 대비 지출이 15151% 늘었네요. 더 분발하시면 좋은 결과 있을 거에요!"
+ *                   example: 대시보드 데이터 조회 완료
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: object
+ *                       description: 당월 및 전월 지출 요약 비교
+ *                       properties:
+ *                         currentMonthSpent:
+ *                           type: number
+ *                           example: 1250000
+ *                           description: 이번 달 총 지출액 (양수)
+ *                         previousMonthSpent:
+ *                           type: number
+ *                           example: 1500000
+ *                           description: 저번 달 총 지출액 (양수)
+ *                         comparison:
+ *                           type: number
+ *                           example: -16.67
+ *                           description: "전월 대비 지출 변화율 (%) (음수: 절약, 양수: 증가)"
+ *                     dailySpent:
+ *                       type: object
+ *                       description: 일자별 지출 추이 데이터 (그래프용)
+ *                       properties:
+ *                         currentMonth:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               date:
+ *                                 type: string
+ *                                 format: date
+ *                                 example: 2025-09-20
+ *                               amount:
+ *                                 type: number
+ *                                 example: 50000
+ *                         previousMonth:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               date:
+ *                                 type: string
+ *                                 format: date
+ *                                 example: 2025-08-20
+ *                               amount:
+ *                                 type: number
+ *                                 example: 75000
+ *                     categorySpent:
+ *                       type: array
+ *                       description: "당월 카테고리별 지출 현황 (Top 10 및 '기타' 통합)"
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           categoryName:
+ *                             type: string
+ *                             example: 식비
+ *                           totalSpent:
+ *                             type: number
+ *                             example: 500000
+ *                     advice:
+ *                       type: string
+ *                       example: "이번 달 지출의 45%가 '식비'에 집중되어 있습니다. 이 지출이 꼭 필요했는지 확인하는 것을 권장합니다."
  *       401:
  *         $ref: '#/components/error/UnauthorizedError'
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.get("/", verifyAccessToken, dashboardController.getDashboard); // 대시보드 조회
+router.get("/", verifyAccessToken, dashboardController.getDashboardSummary); // 대시보드 조회
 
 module.exports = router;

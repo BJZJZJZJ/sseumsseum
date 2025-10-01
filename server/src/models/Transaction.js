@@ -42,7 +42,7 @@ const transactionSchema = new mongoose.Schema({
     required: false,
   },
 
-  transactionDatetime: {
+  transactionDate: {
     type: Date,
     required: true,
   },

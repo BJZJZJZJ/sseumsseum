@@ -27,8 +27,25 @@ const verifyAccessToken = (req, res, next) => {
     next();
   } catch (error) {
     console.error("토큰 검증 오류:", error);
-    // 토큰 만료 혹은 유효하지 않은 토큰
-    return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
+    if (error instanceof jwt.TokenExpiredError) {
+      // 1. 토큰 만료 에러
+      return res.status(401).json({
+        message: "토큰이 만료되었습니다.",
+        code: "TOKEN_EXPIRED",
+      });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      // 2. 잘못된 토큰 에러 (서명 오류, 변조 등)
+      return res.status(401).json({
+        message: "유효하지 않은 토큰입니다.",
+        code: "INVALID_TOKEN",
+      });
+    } else {
+      // 3. 기타 에러
+      return res.status(401).json({
+        message: "인증에 실패했습니다.",
+        code: "AUTH_FAILED",
+      });
+    }
   }
 };
 

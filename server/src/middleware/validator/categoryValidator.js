@@ -3,6 +3,7 @@ const {
   header,
   query,
   param,
+  check,
   validationResult,
 } = require("express-validator");
 
@@ -10,17 +11,18 @@ const validateCategory = [
   header("Authorization").notEmpty(),
   body("name").notEmpty().isLength({ min: 1, max: 20 }),
   body("type").notEmpty().isIn(["income", "expense"]),
+  body("parentCategory").optional().isMongoId(),
 ];
 
-const validateGetCategories = [
+const validateGetCategories = [header("Authorization").notEmpty()];
+const validateGetChildCategories = [
   header("Authorization").notEmpty(),
-  query("page").optional().isInt({ min: 1 }),
-  query("limit").optional().isInt({ min: 10, max: 20 }),
+  check("parentId").notEmpty().isMongoId(),
 ];
 
 const validateParamId = [
   header("Authorization").notEmpty(),
-  param("id").isMongoId(),
+  param("id").notEmpty().isMongoId(),
 ];
 
 const validationHandler = (req, res, next) => {
@@ -34,6 +36,7 @@ const validationHandler = (req, res, next) => {
 module.exports = {
   post: [validateCategory, validationHandler],
   get: [validateGetCategories, validationHandler],
+  getChild: [validateGetChildCategories, validationHandler],
   update: [validateCategory, validateParamId, validationHandler],
   delete: [validateParamId, validationHandler],
 };

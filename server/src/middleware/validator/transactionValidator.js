@@ -1,8 +1,6 @@
 const {
   body,
   validationResult,
-  checkExact,
-  check,
   query,
   header,
   param,
@@ -10,8 +8,8 @@ const {
 
 const validateGetTransactions = [
   header("Authorization").notEmpty(),
-  query("page").optional().isInt({ min: 1 }),
-  query("limit").optional().isInt({ min: 10, max: 20 }),
+  query("page").notEmpty().isInt({ min: 1 }),
+  query("limit").notEmpty().isInt({ min: 10, max: 20 }),
   query("startDate").optional().isISO8601().toDate(),
   query("endDate").optional().isISO8601().toDate(),
   query("type").optional().isIn(["income", "expense"]),
@@ -20,9 +18,9 @@ const validateGetTransactions = [
 
 const validateCreateTransaction = [
   header("Authorization").notEmpty(),
-  body("amount").notEmpty(),
+  body("amount").notEmpty().isNumeric(),
   body("type").notEmpty().isIn(["income", "expense"]),
-  body("datetime").notEmpty().isISO8601().toDate(),
+  body("transactionDate").notEmpty().isISO8601().toDate(),
   body("method").optional().isIn(["cash", "card", "transfer", "other"]),
   body("categoryId").notEmpty().isMongoId(),
   body("description").optional(),
@@ -45,9 +43,9 @@ const validateCsvFile = [
 const validateUpdateTransaction = [
   header("Authorization").notEmpty(),
   param("id").notEmpty().isMongoId(),
-  body("amount").optional(),
+  body("amount").optional().isNumeric(),
   body("type").optional().isIn(["income", "expense"]),
-  body("datetime").optional().isISO8601().toDate(),
+  body("transactionDate").optional().isISO8601().toDate(),
   body("method").optional().isIn(["cash", "card", "transfer", "other"]),
   body("categoryId").optional().isMongoId(),
   body("description").optional(),

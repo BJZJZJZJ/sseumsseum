@@ -19,7 +19,7 @@ const {
  *   get:
  *     summary: 유저 개인정보 조회
  *     description: 유저의 개인정보를 반환합니다. 토큰이 필수입니다.
- *     tags: [(O) users]
+ *     tags: [users]
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
@@ -52,7 +52,7 @@ router.get(
  *   put:
  *     summary: 비밀번호를 제외한 유저 개인정보 수정
  *     description: 유저 데이터의 새로운 정보를 입력 받아 수정합니다. 토큰이 필수입니다.
- *     tags: [(O) users]
+ *     tags: [users]
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
@@ -102,7 +102,7 @@ router.put(
  *   post:
  *     summary: 비밀번호 체크
  *     description: 유저의 비밀번호를 통해 사용자 인증을 진행합니다. 토큰이 필수입니다.
- *     tags: [(O) users]
+ *     tags: [users]
  *     parameters:
  *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
@@ -159,7 +159,7 @@ router.post(
  *   put:
  *     summary: 비밀번호 수정
  *     description: 유저의 비밀번호를 수정합니다. 토큰이 필수입니다.
- *     tags: [(O) users]
+ *     tags: [users]
  *     parameters:
  *       - $ref: '#/components/parameters/PasswordTokenHeader'
  *     requestBody:
@@ -221,7 +221,7 @@ router.put(
  *   delete:
  *     summary: 회원탈퇴
  *     description: 회원 탈퇴를 진행합니다. 비밀번호 인증 후 API 호출이 가능합니다. DB에서 관련 데이터가 모두 지워집니다. (하드삭제)
- *     tags: [(O) users]
+ *     tags: [users]
  *     parameters:
  *       - $ref: '#/components/parameters/PasswordTokenHeader'
  *     responses:

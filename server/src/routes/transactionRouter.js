@@ -64,7 +64,7 @@ const validator = require("../middleware/validator/transactionValidator");
  *          enum: [income, expense]
  *          example: income
  *        required: false
- *     tags: [(O) transactions]
+ *     tags: [transactions ]
  *     responses:
  *       200:
  *         description: 이용자의 거래 내역이 성공적으로 조회되었습니다.
@@ -97,8 +97,6 @@ const validator = require("../middleware/validator/transactionValidator");
  *         $ref: '#/components/error/BadRequestError'
  *       401:
  *         $ref: '#/components/error/UnauthorizedError'
- *       404:
- *         $ref: '#/components/error/NotFoundError'
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
@@ -116,7 +114,7 @@ router.get(
  *   post:
  *     summary: 거래내역 생성
  *     description: 이용자의 거래내역을 생성합니다. 토큰이 필수입니다.
- *     tags: [(O) transactions]
+ *     tags: [transactions ]
  *     parameters:
  *       - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
@@ -145,6 +143,8 @@ router.get(
  *         $ref: '#/components/error/UnauthorizedError'
  *       403:
  *         $ref: '#/components/error/ForbiddenError'
+ *       404:
+ *         $ref: '#/components/error/NotFoundError'
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
@@ -158,11 +158,11 @@ router.post(
 
 /**
  * @swagger
- * /api/v1/transactions/:id:
+ * /api/v1/transactions/:
  *   put:
  *     summary: 거래내역 수정
  *     description: 이용자의 거래내역을 수정합니다. 토큰이 필수입니다.
- *     tags: [(O) transactions]
+ *     tags: [transactions ]
  *     parameters:
  *      - in: path
  *        name: id
@@ -219,11 +219,11 @@ router.put(
 
 /**
  * @swagger
- * /api/v1/transactions/:id:
+ * /api/v1/transactions/:
  *   delete:
  *     summary: 거래내역 삭제
  *     description: 이용자의 거래내역을 삭제합니다. 토큰이 필수입니다.
- *     tags: [(O) transactions]
+ *     tags: [transactions ]
  *     parameters:
  *      - in: path
  *        name: id
@@ -256,8 +256,6 @@ router.put(
  *         $ref: '#/components/error/BadRequestError'
  *       401:
  *         $ref: '#/components/error/UnauthorizedError'
- *       403:
- *         $ref: '#/components/error/ForbiddenError'
  *       404:
  *         $ref: '#/components/error/NotFoundError'
  *       500:
@@ -277,7 +275,7 @@ router.delete(
  *   post:
  *     summary: 거래 내역 업로드
  *     description: CSV 파일을 통해 거래 내역을 업로드합니다. 토큰이 필수입니다.
- *     tags: [(O) transactions]
+ *     tags: [transactions ]
  *     parameters:
  *       - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
@@ -303,7 +301,20 @@ router.delete(
  *              properties:
  *                message:
  *                  type: string
- *                  example: 150개의 거래 내역이 성공적으로 업로드되었습니다.
+ *                  example: 총 179개의 데이터 중 178개의 거래내역이 업로드 됐습니다.
+ *                error:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                    properties:
+ *                      row:
+ *                        type: integer
+ *                        description: 오류가 발생한 행 번호
+ *                      errors:
+ *                        type: string
+ *                        description: 오류 메시지
+ *                        example: ["입금과 출금이 동시에 존재합니다.", "거래일자는 유효한 날짜여야 합니다."]
+ *
  *       400:
  *         $ref: '#/components/error/BadRequestError'
  *       401:
@@ -316,6 +327,7 @@ router.post(
   verifyAccessToken,
   upload.single("csvFile"),
   validator.validateCsvFile,
+  validator.validationHandler,
   transactionController.uploadTransaction
 );
 

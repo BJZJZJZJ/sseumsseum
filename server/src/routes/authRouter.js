@@ -16,7 +16,7 @@ const { RESEND_LIMIT } = require("../middleware/rateLimit");
  *   post:
  *     summary: 회원가입
  *     description: 이메일와 비밀번호 및 개인정보를 입력받아 회원가입을 진행합니다.
- *     tags: [(O) auth]
+ *     tags: [auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -55,7 +55,7 @@ router.post(
  *   post:
  *     summary: 로그인
  *     description: 이메일와 비밀번호를 입력받아 로그인을 진행합니다. 성공 시 JWT 토큰을 반환합니다.
- *     tags: [(O) auth]
+ *     tags: [auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -112,7 +112,7 @@ router.post("/login", validateLogin, validationHandler, authController.login);
  *   post:
  *     summary: 로그아웃
  *     description: 사용자의 로그아웃을 처리합니다. 토큰이 필수입니다.
- *     tags: [(O) auth]
+ *     tags: [auth]
  *     security:
  *       bearerAuth: []
  *     responses:
@@ -146,7 +146,7 @@ router.post(
  *   post:
  *     summary: 토큰 갱신 (Refresh + Access)
  *     description: 사용자의 토큰을 갱신합니다. 리프래시 토큰이 필수입니다.
- *     tags: [(O) auth]
+ *     tags: [auth]
  *     security:
  *       bearerAuth: []
  *     responses:
@@ -189,7 +189,7 @@ router.post(
  *   post:
  *     summary: 인증 메일 재전송
  *     description: 사용자의 인증 메일을 재전송합니다. 이메일이 필수입니다.
- *     tags: [(O) auth]
+ *     tags: [auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -235,7 +235,7 @@ router.post(
  *   get:
  *     summary: 이메일 인증
  *     description: 사용자의 이메일을 인증합니다. 토큰과 이메일이 필수입니다.
- *     tags: [(O) auth]
+ *     tags: [auth]
  *     parameters:
  *      - in: query
  *        name: token
