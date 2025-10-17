@@ -1,18 +1,49 @@
-import { Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../Navbar';
+import Sidebar from '../dashboard/Sidebar';
+
+const dashboardPaths = [
+  '/dashboard',
+  '/mypage',
+  '/transactions',
+  '/categories',
+  '/budget',
+  '/report',
+];
 
 export default function MainLayout() {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  const isDashboardArea = dashboardPaths.some(path => location.pathname.startsWith(path));
+
   return (
-    // 1. flex 컨테이너로 만들고, 최소 높이를 화면 전체로 설정합니다.
-    <div className="flex flex-col min-h-screen font-sans antialiased text-gray-900 bg-white dark:text-gray-100 dark:bg-gray-800">
-      <Navbar />
-      {/* 2. main 영역이 남은 공간을 모두 차지하도록 설정합니다. */}
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-      <footer className="py-8 text-center text-gray-500 dark:text-gray-400">
-        <p>&copy; {new Date().getFullYear()} 씀씀 (sseumsseum). All rights reserved.</p>
-      </footer>
+    <div className="flex h-screen bg-white">
+      {isDashboardArea && <Sidebar isOpen={isSidebarOpen} />}
+
+      {isSidebarOpen && isDashboardArea && (
+        <div 
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-20 lg:hidden"
+          aria-hidden="true"
+        ></div>
+      )}
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navbar onHamburgerClick={() => setSidebarOpen(true)} />
+        
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto ${isDashboardArea ? 'bg-gray-50 p-6' : ''}`}>
+          <Outlet />
+        </main>
+        
+        {!isDashboardArea && (
+          <footer className="bg-gray-50 text-gray-500 text-center p-6 border-t">
+            <p>&copy; {new Date().getFullYear()} 씀씀 (sseumsseum). All rights reserved.</p>
+          </footer>
+        )}
+      </div>
     </div>
   );
 }
+
