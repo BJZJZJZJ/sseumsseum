@@ -1,12 +1,12 @@
 import axiosInstance from './axiosInstance';
-// src/types/api.ts에서 필요한 타입들을 { } 안에 명시하여 가져옵니다.
 import type { 
   SignupFormData,
   RegisterRequestData, 
   LoginRequestData, 
   LoginResponse, 
   RefreshResponse,
-  ResendRequest
+  ResendRequestData,
+  ResendResponse,
 } from '../types/api';
 
 /**
@@ -38,25 +38,27 @@ export const loginUser = async (data: LoginRequestData): Promise<LoginResponse> 
  * 로그아웃을 요청합니다.
  */
 export const logoutUser = async (): Promise<void> => {
-  await axiosInstance.post('/auth/logout');
+  await axiosInstance.post('/auth/logout', null);
 };
 
 /**
  * POST /auth/refresh
- * 새로운 Access/Refresh 토큰 쌍을 요청합니다.
- * @param refreshToken - 기존의 Refresh Token
+ * 새로운 Access Token을 요청합니다.
+ * Refresh Token은 HttpOnly 쿠키에 담겨 자동으로 전송됩니다.
  */
-export const refreshAuthToken = async (refreshToken: string): Promise<RefreshResponse> => {
-  const response = await axiosInstance.post<RefreshResponse>('/auth/refresh', { refreshToken });
+export const refreshAuthToken = async (): Promise<RefreshResponse> => {
+  // 서버가 쿠키의 refreshToken을 사용하므로, body는 비워서 보냅니다.
+  const response = await axiosInstance.post<RefreshResponse>('/auth/refresh', null);
   return response.data;
 };
 
 /**
  * POST /auth/resend
- * 이메일 인증 메일 재전송을 요청합니다.
+ * 인증 메일 재전송을 요청합니다.
  */
-export const resendVerificationEmail = async (data: ResendRequest): Promise<void> => {
-  await axiosInstance.post('/auth/resend', data);
+export const resendVerificationEmail = async (data: ResendRequestData): Promise<ResendResponse> => {
+  const response = await axiosInstance.post<ResendResponse>('/auth/resend', data);
+  return response.data;
 };
 
 /**
@@ -65,7 +67,6 @@ export const resendVerificationEmail = async (data: ResendRequest): Promise<void
  * @param token - 이메일 링크에 포함된 인증 토큰
  */
 export const verifyUserEmail = async (token: string): Promise<void> => {
-  // GET 요청에서는 params를 사용하여 쿼리 스트링을 추가합니다.
   await axiosInstance.get('/auth/verify', { params: { token } });
 };
 

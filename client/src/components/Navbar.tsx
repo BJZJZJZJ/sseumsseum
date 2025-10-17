@@ -1,61 +1,89 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { logoutUser } from '../api/authApi';
 import useAuthStore from '../store/authStore';
+import useUserStore from '../store/userStore';
+import { LogoIcon } from './icons/LogoIcon';
+import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react';
+import { User, LogOut, LayoutDashboard } from 'lucide-react';
 
-export default function Navbar() {
+const HamburgerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
+
+interface NavbarProps {
+  onHamburgerClick: () => void;
+}
+
+export default function Navbar({ onHamburgerClick }: NavbarProps) {
   const navigate = useNavigate();
-  // Zustand 스토어에서 로그인 상태와 로그아웃 함수를 가져옵니다.
   const { isLoggedIn, logout } = useAuthStore();
+  const { profile } = useUserStore();
 
   const handleLogout = async () => {
-    // 사용자에게 로그아웃 여부를 다시 한번 확인받습니다.
     if (!window.confirm('정말 로그아웃 하시겠습니까?')) return;
-
     try {
       await logoutUser();
-      logout(); // 스토어의 상태를 로그아웃으로 변경합니다.
-      alert('로그아웃 되었습니다.');
-      navigate('/'); // 로그아웃 후 홈으로 이동
+      logout();
+      navigate('/');
     } catch (error) {
       console.error('로그아웃 실패:', error);
-      // 토큰 만료 등의 이유로 서버에서 로그아웃 실패 시에도 클라이언트 상태는 로그아웃 처리
-      logout();
-      alert('로그아웃 처리 중 오류가 발생했습니다. 클라이언트의 로그인 정보를 삭제합니다.');
-      navigate('/');
+      alert('로그아웃 처리 중 오류가 발생했습니다.');
     }
   };
 
   return (
-    <header className="bg-gray-800 border-b border-gray-700">
+    <header className="bg-white border-b border-gray-200 flex-shrink-0 z-10 shadow-sm">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex-shrink-0">
-            <Link to="/" className="text-2xl font-bold text-white hover:text-gray-300">
-              씀씀 (sseumsseum)
-            </Link>
+          <div className="flex items-center">
+            {isLoggedIn && (
+              <button onClick={onHamburgerClick} className="lg:hidden text-gray-500 mr-4">
+                <HamburgerIcon />
+              </button>
+            )}
+            <div className="flex-shrink-0">
+              {/* ✅ 로그인 상태에 따라 링크를 동적으로 변경 */}
+              <Link to={isLoggedIn ? "/dashboard" : "/"} className="flex items-center gap-2 text-2xl font-bold text-gray-800">
+                <LogoIcon className="w-8 h-8" />
+                <span className="hidden sm:inline">씀씀</span>
+              </Link>
+            </div>
           </div>
+
           <div className="flex items-center space-x-4">
             {isLoggedIn ? (
-              // 로그인 상태일 때 로그아웃 버튼 표시
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                로그아웃
-              </button>
+              <Menu as="div" className="relative">
+                <MenuButton className="flex items-center justify-center w-10 h-10 bg-indigo-600 text-white rounded-full font-bold text-lg hover:bg-indigo-700">
+                  {profile ? profile.user.nickname.charAt(0).toUpperCase() : '?'}
+                </MenuButton>
+                <Transition enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
+                  <MenuItems className="absolute right-0 mt-2 w-48 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="px-1 py-1">
+                       <MenuItem>
+                        <Link to="/dashboard" className="group flex rounded-md items-center w-full px-2 py-2 text-sm text-gray-700 data-[active]:bg-gray-100">
+                          <LayoutDashboard className="w-5 h-5 mr-2 text-gray-400" /> 대시보드
+                        </Link>
+                      </MenuItem>
+                      <MenuItem>
+                        <Link to="/mypage" className="group flex rounded-md items-center w-full px-2 py-2 text-sm text-gray-700 data-[active]:bg-gray-100">
+                          <User className="w-5 h-5 mr-2 text-gray-400" /> 마이페이지
+                        </Link>
+                      </MenuItem>
+                    </div>
+                    <div className="px-1 py-1">
+                      <MenuItem>
+                        <button onClick={handleLogout} className="group flex rounded-md items-center w-full px-2 py-2 text-sm text-red-600 data-[active]:bg-red-50">
+                          <LogOut className="w-5 h-5 mr-2" /> 로그아웃
+                        </button>
+                      </MenuItem>
+                    </div>
+                  </MenuItems>
+                </Transition>
+              </Menu>
             ) : (
-              // 로그아웃 상태일 때 로그인/가입 버튼 표시
               <>
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-gray-300 hover:text-white"
-                >
+                <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-indigo-600">
                   로그인
                 </Link>
-                <Link
-                  to="/signup"
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
-                >
+                <Link to="/signup" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700">
                   가입하기
                 </Link>
               </>
