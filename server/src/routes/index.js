@@ -1,0 +1,18 @@
+const router = require("express").Router();
+
+const userRouter = require("./userRouter");
+const authRouter = require("./authRouter");
+const categoryRouter = require("./categoryRouter");
+const transactionRouter = require("./transactionRouter");
+const dashboardRouter = require("./dashboardRouter");
+const budgetController = require("./budgetRouter");
+
+router.use("/auth", authRouter); // 인증 관련 라우터 설정
+router.use("/users", userRouter); // 유저 관련 라우터 설정
+router.use("/categories", categoryRouter); // 카테고리 관련 라우터 설정
+router.use("/transactions", transactionRouter); // 거래내역 관련 라우터 설정
+router.use("/dashboard", dashboardRouter);
+router.use("/budgets", budgetController); // 예산 관련 라우터 설정
+router.use("/reports", require("./reportRouter")); // 리포트 관련 라우터 설정
+
+module.exports = router;

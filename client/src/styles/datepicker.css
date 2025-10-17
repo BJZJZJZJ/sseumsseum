@@ -1,0 +1,63 @@
+/* react-datepicker 커스텀 스타일 */
+
+.react-datepicker {
+  @apply font-sans border-gray-300 rounded-lg shadow-lg;
+  font-family: inherit; /* 프로젝트 폰트 상속 */
+}
+
+.react-datepicker__header {
+  @apply bg-indigo-600 rounded-t-lg;
+  border-bottom: none;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  @apply text-white font-bold;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+.react-datepicker__navigation--previous,
+.react-datepicker__navigation--next {
+  top: 0.9rem;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: white;
+}
+
+.react-datepicker__day-name {
+  @apply text-gray-500 font-semibold;
+}
+
+.react-datepicker__day {
+  @apply rounded-full;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-gray-200;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  @apply bg-indigo-600 text-white;
+}
+
+.react-datepicker__day--selected:hover,
+.react-datepicker__day--in-selecting-range:hover,
+.react-datepicker__day--in-range:hover {
+  @apply bg-indigo-700;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-gray-300;
+}
+
+.react-datepicker__year-wrapper {
+  max-width: 290px;
+}
+.react-datepicker__year .react-datepicker__year-text {
+  @apply w-16 m-1 py-2 rounded-lg;
+}

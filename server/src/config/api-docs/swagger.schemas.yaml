@@ -1,0 +1,112 @@
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - email
+        - password
+        - nickname
+      properties:
+        email:
+          type: string
+          description: 사용자 email
+          example: testemail@google.com
+        password:
+          type: string
+          description: 사용자 비밀번호
+          example: 1q2w3e4r!
+        nickname:
+          type: string
+          description: 사용자 닉네임
+          example: 씀씀이용자
+        birth:
+          type: string # 타입은 string
+          format: date # 💡 format: date로 날짜 형식 지정
+          description: 사용자 생일 (YYYY-MM-DD)
+          example: "1995-12-25"
+        gender:
+          type: string
+          description: 사용자 성별
+          example: 남
+
+    Asset:
+      type: object
+      properties:
+        asset_name:
+          type: string
+          description: 자산 이름
+          example: KB국민은행 계좌
+        asset_type:
+          type: string
+          description: 자산 종류
+          example: 적금계좌
+        asset_amount:
+          type: number
+          description: 자산 금액
+          example: 300000
+
+    Budget:
+      type: object
+      properties:
+        month:
+          type: string
+          description: 예산 월
+          example: "2023-10"
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              categoryId:
+                type: string
+                description: 카테고리 ID
+                example: 5a76gfq23raf6glkaef
+              amount:
+                type: number
+                description: 카테고리별 예산 금액
+                example: 2000000
+
+    Category:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 카테고리 이름
+          example: 식비
+        type:
+          type: string
+          description: 카테고리 종류 (income / expense)
+          example: expense
+        parentCategory:
+          type: string
+          description: (소분류의 경우만 사용) 대분류 카테고리 ID
+          example: 68b69069c839252636dbd6a5
+
+    Transaction:
+      type: object
+      properties:
+        categoryId:
+          type: string
+          description: 카테고리 ID (소분류)
+          example: 5a76gfq23raf6glkaef
+        description:
+          type: string
+          description: 거래내역 이름
+          example: 점심 식사
+        amount:
+          type: number
+          description: 거래 금액
+          example: 15000
+        type:
+          type: string
+          description: 거래 종류 (income / expense)
+          example: expense
+        transactionDate:
+          type: string # 타입은 string
+          format: date # 💡 format: date로 날짜 형식 지정
+          description: 거래 날짜 (YYYY-MM-DD)
+          example: "2025-09-10"
+        method:
+          type: string
+          description: 거래 방법 [cash / card / transfer / others]
+          example: cash

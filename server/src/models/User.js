@@ -1,0 +1,55 @@
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  password_hash: {
+    type: String,
+    required: true,
+  },
+
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
+
+  nickname: {
+    type: String,
+  },
+
+  birth: {
+    type: Date,
+  },
+
+  gender: {
+    type: String,
+    enum: ["남", "여"],
+  },
+
+  // 이메일 인증 성공 여부
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    required: true,
+  },
+
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+    required: true,
+  },
+});
+
+const UserModel = mongoose.model("Users", userSchema, "Users");
+
+module.exports = UserModel;
