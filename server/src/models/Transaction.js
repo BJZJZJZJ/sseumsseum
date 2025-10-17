@@ -6,13 +6,13 @@ const transactionSchema = new mongoose.Schema({
     ref: "Users",
     required: true,
   },
-
+  /*
   assetId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Assets",
     required: true,
   },
-
+  */
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Categories",
@@ -22,6 +22,13 @@ const transactionSchema = new mongoose.Schema({
   amount: {
     type: Number,
     required: true,
+  },
+
+  method: {
+    type: String,
+    enum: ["cash", "card", "transfer", "other"],
+    default: "other",
+    required: false,
   },
 
   type: {
@@ -35,7 +42,7 @@ const transactionSchema = new mongoose.Schema({
     required: false,
   },
 
-  transactionDatetime: {
+  transactionDate: {
     type: Date,
     required: true,
   },

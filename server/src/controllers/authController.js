@@ -18,8 +18,6 @@ const { sendVerificationEmail } = require("../utils/mailer");
 
 const COOKIE_MAX_AGE = 3600 * 24 * 15; // 쿠키 유지 시간 (15일)
 
-// 이메일 인증용 6자리 랜덤코드
-const genSixCode = () => Math.floor(100000 + Math.random() * 900000).toString(); // 6자리
 // 이메일 인증용 임시 토큰 해시
 const hashToken = (raw) =>
   crypto.createHash("sha256").update(raw).digest("hex");
@@ -29,7 +27,6 @@ async function issueVerification(user) {
   // 랜덤 32바이트 → 링크용 토큰
   const rawToken = crypto.randomBytes(32).toString("hex");
   const tokenHash = hashToken(rawToken);
-  const code = genSixCode();
   const expiresMin = Number(TOKEN_EXPIRES_MIN || 30);
   const expiresAt = new Date(Date.now() + expiresMin * 60 * 1000);
 
@@ -43,7 +40,6 @@ async function issueVerification(user) {
   await VerificationToken.create({
     userId: user._id,
     tokenHash,
-    code,
     expiresAt,
     purpose: "email-verify",
   });
@@ -55,7 +51,6 @@ async function issueVerification(user) {
   await sendVerificationEmail({
     to: user.email,
     link: verifyLink,
-    code,
   });
 }
 
@@ -69,8 +64,16 @@ const createUser = async (req, res) => {
     // 이메일 중복 체크
     const existingUser = await User.findOne({ email: user.email });
 
-    if (existingUser)
-      return res.status(409).json({ message: "이미 존재하는 이메일입니다." });
+    if (existingUser && existingUser.verified === false)
+      return res.status(409).json({
+        message: "이메일 미인증 계정입니다. 다시 인증해주세요.",
+        code: "EMAIL_UNVERIFIED",
+      });
+    else if (existingUser)
+      return res.status(409).json({
+        message: "이미 존재하는 이메일입니다.",
+        code: "EMAIL_VERIFIED",
+      });
 
     // 비밀번호 해싱
     user.password_hash = await hashPassword(user.password);
@@ -139,9 +142,7 @@ const verifyEmail = async (req, res) => {
     });
 
     if (!verificationRecord) {
-      return res
-        .status(400)
-        .json({ message: "유효하지 않은 또는 만료된 토큰입니다." });
+      return res.redirect("http://localhost:5173/auth/verify-failure");
     }
 
     // 토큰 사용 처리
@@ -153,7 +154,7 @@ const verifyEmail = async (req, res) => {
     await user.save();
 
     // 디렉토리 redirect
-    return res.redirect("/"); // 프론트 라우트로 교체 가능
+    return res.redirect("http://localhost:5173/auth/verify-success"); // 프론트 라우트로 교체 가능
     // return res.status(201).json({ message: "이메일 인증이 완료되었습니다." });
   } catch (e) {
     console.error("이메일 인증 오류:", e);

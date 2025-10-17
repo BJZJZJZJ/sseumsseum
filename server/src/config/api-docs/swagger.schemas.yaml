@@ -48,29 +48,20 @@ components:
     Budget:
       type: object
       properties:
-        budget_name:
-          type: string
-          description: 예산 이름
-          example: 10월 예산
-        budget_month:
+        month:
           type: string
           description: 예산 월
           example: "2023-10"
-        budget_total:
-          type: Number
-          description: 총 예산 금액
-          example: 10000000
-
-        budget_categories:
+        categories:
           type: array
           items:
             type: object
             properties:
-              category_id:
+              categoryId:
                 type: string
                 description: 카테고리 ID
                 example: 5a76gfq23raf6glkaef
-              budget_amount:
+              amount:
                 type: number
                 description: 카테고리별 예산 금액
                 example: 2000000
@@ -78,40 +69,44 @@ components:
     Category:
       type: object
       properties:
-        category_name:
+        name:
           type: string
           description: 카테고리 이름
           example: 식비
-        category_type:
+        type:
           type: string
-          description: 카테고리 종류 (수입/지출)
-          example: 지출
+          description: 카테고리 종류 (income / expense)
+          example: expense
+        parentCategory:
+          type: string
+          description: (소분류의 경우만 사용) 대분류 카테고리 ID
+          example: 68b69069c839252636dbd6a5
 
     Transaction:
       type: object
       properties:
-        transaction_name:
+        categoryId:
+          type: string
+          description: 카테고리 ID (소분류)
+          example: 5a76gfq23raf6glkaef
+        description:
           type: string
           description: 거래내역 이름
           example: 점심 식사
-        transaction_amount:
+        amount:
           type: number
           description: 거래 금액
           example: 15000
-        transaction_type:
+        type:
           type: string
-          description: 거래 종류 (수입/지출)
-          example: 지출
-        transaction_datetime:
+          description: 거래 종류 (income / expense)
+          example: expense
+        transactionDate:
           type: string # 타입은 string
           format: date # 💡 format: date로 날짜 형식 지정
           description: 거래 날짜 (YYYY-MM-DD)
-          example: "2023-10-01 hh:mm:ss"
-        transaction_assetId:
+          example: "2025-09-10"
+        method:
           type: string
-          description: 거래 자산 ID
-          example: 1234567890abcdef
-        transaction_category_id:
-          type: string
-          description: 카테고리 ID
-          example: 5a76gfq23raf6glkaef
+          description: 거래 방법 [cash / card / transfer / others]
+          example: cash

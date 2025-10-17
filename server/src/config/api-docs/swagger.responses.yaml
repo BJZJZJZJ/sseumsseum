@@ -44,82 +44,84 @@ components:
     BudgetResponse:
       type: object
       properties:
-        budget_Id:
+        message:
           type: string
-          description: 예산 ID
-          example: 1234567890abcdef
-        budget_name:
-          type: string
-          description: 예산 이름
-          example: 10월 예산
-        budget_month:
-          type: string
-          description: 예산 월
-          example: "2023-10"
-        budget_total:
-          type: Number
-          description: 총 예산 금액
-          example: 10000000
-
-        budget_categories:
-          type: array
-          items:
-            type: object
-            properties:
-              category_id:
-                type: string
-                description: 카테고리 ID
-                example: 5a76gfq23raf6glkaef
-              category_name:
-                type: string
-                description: 카테고리 이름
-                example: 식비
-              category_amount:
-                type: number
-                description: 카테고리별 예산 금액
-                example: 2000000
+          description: 응답 메시지
+          example: 예산 조회 성공
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              description: 예산 ID
+              example: 1234567890abcdef
+            month:
+              type: string
+              description: 예산 월
+              example: "2023-10"
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  categoryId:
+                    type: string
+                    description: 카테고리 ID
+                    example: 5a76gfq23raf6glkaef
+                  categoryName:
+                    type: string
+                    description: 카테고리 이름
+                    example: 식비
+                  amount:
+                    type: number
+                    description: 카테고리별 예산 금액
+                    example: 2000000
 
     CategoryResponse:
       type: object
       properties:
-        category_id:
+        id:
           type: string
           description: 카테고리 ID
           example: 5a76gfq23raf6glkaef
-        category_name:
+        name:
           type: string
           description: 카테고리 이름
           example: 식비
-        category_type:
+        type:
           type: string
-          description: 카테고리 종류 (수입/지출)
-          example: 지출
+          description: 카테고리 종류 (income / expense)
+          example: expense
 
     TransactionResponse:
       type: object
       properties:
-        transaction_name:
+        id:
           type: string
-          description: 거래내역 이름
-          example: 점심 식사
-        transaction_amount:
+          description: 거래 ID
+          example: 1234567890abcdef
+        amount:
           type: number
           description: 거래 금액
           example: 15000
-        transaction_type:
+        method:
+          type: string
+          description: 거래 방법
+          example: cash
+        type:
           type: string
           description: 거래 종류 (수입/지출)
-          example: 지출
-        transaction_datetime:
-          type: string # 타입은 string
-          format: date # 💡 format: date로 날짜 형식 지정
+          example: expense
+        description:
+          type: string
+          description: 거래내역 이름
+          example: 점심 식사
+        date:
+          type: string
+          format: date
           description: 거래 시간 (YYYY-MM-DD)
-          example: "2023-10-01 hh:mm:ss"
-        transaction_assetId:
+          example: "2025-09-09T00:00:00.000Z"
+        category:
           type: string
-          description: 거래 자산 ID
-          example: 1234567890abcdef
-        transaction_category_id:
-          type: string
-          description: 카테고리 ID
-          example: 5a76gfq23raf6glkaef
+          description: 카테고리
+          example: 식비

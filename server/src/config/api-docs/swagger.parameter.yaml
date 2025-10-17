@@ -1,0 +1,46 @@
+components:
+  parameters:
+    PasswordTokenHeader:
+      in: header
+      name: X-Password-Token
+      required: true
+      schema:
+        type: string
+        description: 비밀번호 확인 토큰
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZTc5Y2EwLTU3YzAtNDAxMi1iYjYxLTYyY2E3YjYyY2E3NyIsInB1cnBvc2UiOiJwYXNzd29yZFZlcmlmaWNhdGlvbiIsImlhdCI6MTcwMTI3MjM5NSwiZXhwIjoxNzAxMjc0
+
+    AccessTokenHeader:
+      in: header
+      name: Authorization
+      required: true
+      schema:
+        type: string
+        description: Bearer {access_token}
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZTc5Y2EwLTU3YzAtNDAxMi1iYjYxLTYyY2E3YjYyY2E3NyIsImlhdCI6MTcwMTI3MjM5NSwiZXhwIjoxNzAxMjc0Mzk1fQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+    PageQuery:
+      in: query
+      name: page
+      required: true
+      schema:
+        type: integer
+        description: 페이지 번호 (1부터 시작)
+        example: 1
+
+    LimitQuery:
+      in: query
+      name: limit
+      required: true
+      schema:
+        type: integer
+        description: 페이지당 항목 수
+        example: 10
+
+    parentIdQuery:
+      in: query
+      name: parentId
+      required: true
+      schema:
+        type: string
+        description: 대분류 카테고리 ID
+        example: 68b9797a4a6395079d2e23ae

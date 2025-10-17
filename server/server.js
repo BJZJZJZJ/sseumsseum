@@ -20,6 +20,9 @@ const indexRouter = require("./src/routes/index"); // 라우터 설정 불러오
 // express 앱 생성
 const app = express();
 
+// API 문서 보호를 위한 Basic Auth 미들웨어
+const basicAuthMiddleware = require("./src/middleware/basicAuthMiddlware");
+
 // 미들웨어 설정
 app.use(express.json()); // JSON 요청 본문 파싱 미들웨어
 app.use(cookieParser());
@@ -33,13 +36,16 @@ app.use(
 );
 */
 
+// API 문서 라우트 설정
 app.use(
   "/api-docs",
+  basicAuthMiddleware,
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, swaggerUiOptions)
 );
 
-app.use("/api/v1/", indexRouter); // 유저 관련 라우터 설정
+// API 라우트 설정
+app.use("/api/v1/", indexRouter);
 
 // 설정된 포트에서 서버 실행
 app.listen(PORT, () => {

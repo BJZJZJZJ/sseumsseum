@@ -7,8 +7,8 @@ const {
 
 const validateUserCreate = [
   body("email").notEmpty().isEmail(),
-  body("password").notEmpty().isLength({ min: 4, max: 20 }),
-  body("nickname").isLength({ min: 2, max: 8 }),
+  body("password").notEmpty().isLength({ min: 6, max: 20 }),
+  body("nickname").isLength({ min: 2, max: 10 }),
   body("birth").optional().isISO8601(),
   body("gender").optional().isIn(["남", "여"]),
 
@@ -30,7 +30,7 @@ const validateLogin = [
   checkExact([], { message: "입력한 값이 올바르지 않습니다." }),
 ];
 
-const validationRefreshToken = [check("refreshToken").notEmpty()];
+const validateRefreshToken = [check("refreshToken").notEmpty()];
 
 const validationHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -45,6 +45,6 @@ module.exports = {
   validateResendMail,
   validateVerifyEmail,
   validateLogin,
-  validationRefreshToken,
+  validateRefreshToken,
   validationHandler,
 };

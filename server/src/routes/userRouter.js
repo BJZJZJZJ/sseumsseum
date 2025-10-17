@@ -1,5 +1,17 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
+const {
+  verifyAccessToken,
+  verifyPasswordToken,
+} = require("../middleware/authMiddleware");
+const {
+  validationGetUser,
+  validationUpdateUser,
+  validationVerifyPassword,
+  validationUpdatePassword,
+  validationDeleteUser,
+  validationHandler,
+} = require("../middleware/validator/userValidator");
 
 /**
  * @swagger
@@ -8,8 +20,10 @@ const userController = require("../controllers/userController");
  *     summary: 유저 개인정보 조회
  *     description: 유저의 개인정보를 반환합니다. 토큰이 필수입니다.
  *     tags: [users]
+ *     parameters:
+ *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
- *       bearerAuth: []
+ *      - bearerAuth: []
  *     responses:
  *       200:
  *         description: 유저의 개인정보를 반환합니다.
@@ -24,7 +38,13 @@ const userController = require("../controllers/userController");
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.get("/me", userController.getUserData);
+router.get(
+  "/me",
+  validationGetUser,
+  validationHandler,
+  verifyAccessToken,
+  userController.getUserData
+);
 
 /**
  * @swagger
@@ -33,8 +53,10 @@ router.get("/me", userController.getUserData);
  *     summary: 비밀번호를 제외한 유저 개인정보 수정
  *     description: 유저 데이터의 새로운 정보를 입력 받아 수정합니다. 토큰이 필수입니다.
  *     tags: [users]
+ *     parameters:
+ *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
- *       bearerAuth: []
+ *      - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -66,7 +88,13 @@ router.get("/me", userController.getUserData);
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.put("/me", userController.updateUserData);
+router.put(
+  "/me",
+  validationUpdateUser,
+  validationHandler,
+  verifyAccessToken,
+  userController.updateUserData
+);
 
 /**
  * @swagger
@@ -75,8 +103,10 @@ router.put("/me", userController.updateUserData);
  *     summary: 비밀번호 체크
  *     description: 유저의 비밀번호를 통해 사용자 인증을 진행합니다. 토큰이 필수입니다.
  *     tags: [users]
+ *     parameters:
+ *      - $ref: '#/components/parameters/AccessTokenHeader'
  *     security:
- *       bearerAuth: []
+ *      - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -84,15 +114,21 @@ router.put("/me", userController.updateUserData);
  *           schema:
  *             type: object
  *             required:
- *               - password
+ *               - currentPassword
  *             properties:
- *               confirmPassword:
+ *               currentPassword:
  *                 type: string
  *                 description: 기존 비밀번호
  *                 example: 1q2w3e4r!
  *     responses:
  *       200:
  *         description: 비밀번호 인증 성공
+ *         headers:
+ *           X-password-token:
+ *             description: 비밀번호 수정을 위한 인증 토큰
+ *             schema:
+ *               type: string
+ *               example: "X-password-token=eyJhbGciOiJIUzI1NiI...; HttpOnly; Secure; SameSite=Strict"
  *         content:
  *           application/json:
  *             schema:
@@ -109,17 +145,23 @@ router.put("/me", userController.updateUserData);
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.post("/me/password", userController.verifyPassword);
+router.post(
+  "/me/password",
+  validationVerifyPassword,
+  validationHandler,
+  verifyAccessToken,
+  userController.verifyPassword
+);
 
 /**
  * @swagger
  * /api/v1/users/me/password:
  *   put:
  *     summary: 비밀번호 수정
- *     description:
+ *     description: 유저의 비밀번호를 수정합니다. 토큰이 필수입니다.
  *     tags: [users]
- *     security:
- *       bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/PasswordTokenHeader'
  *     requestBody:
  *       required: true
  *       content:
@@ -127,7 +169,8 @@ router.post("/me/password", userController.verifyPassword);
  *           schema:
  *             type: object
  *             required:
- *              - password
+ *              - newPassword
+ *              - confirmNewPassword
  *             properties:
  *               newPassword:
  *                 type: string
@@ -140,6 +183,12 @@ router.post("/me/password", userController.verifyPassword);
  *     responses:
  *       200:
  *         description:
+ *         headers:
+ *           Set-Cookie:
+ *             description: RefreshToken
+ *             schema:
+ *               type: string
+ *               example: "refreshToken=eyJhbGciOiJIUzI1NiI...; HttpOnly; Secure; SameSite=Strict"
  *         content:
  *           application/json:
  *             schema:
@@ -148,6 +197,9 @@ router.post("/me/password", userController.verifyPassword);
  *                 message:
  *                  type: string
  *                  example: 비밀번호 수정 성공
+ *                 accessToken:
+ *                  type: string
+ *                  example: awrekjghawkjytjhoi3w4678q2agrjh2a
  *       400:
  *         $ref: '#/components/error/BadRequestError'
  *       401:
@@ -155,6 +207,47 @@ router.post("/me/password", userController.verifyPassword);
  *       500:
  *         $ref: '#/components/error/ServerError'
  */
-router.put("/me/password", userController.updatePassword);
+router.put(
+  "/me/password",
+  validationUpdatePassword,
+  validationHandler,
+  verifyPasswordToken,
+  userController.updatePassword
+);
+
+/**
+ * @swagger
+ * /api/v1/users/me/:
+ *   delete:
+ *     summary: 회원탈퇴
+ *     description: 회원 탈퇴를 진행합니다. 비밀번호 인증 후 API 호출이 가능합니다. DB에서 관련 데이터가 모두 지워집니다. (하드삭제)
+ *     tags: [users]
+ *     parameters:
+ *       - $ref: '#/components/parameters/PasswordTokenHeader'
+ *     responses:
+ *       200:
+ *         description:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                  type: string
+ *                  example: 회원탈퇴가 완료되었습니다.
+ *       400:
+ *         $ref: '#/components/error/BadRequestError'
+ *       401:
+ *         $ref: '#/components/error/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/error/ServerError'
+ */
+router.delete(
+  "/me",
+  validationDeleteUser,
+  validationHandler,
+  verifyPasswordToken,
+  userController.deleteUser
+);
 
 module.exports = router;

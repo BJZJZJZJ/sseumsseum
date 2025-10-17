@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const categorySchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Users",
-  },
-
   name: {
     type: String,
     required: true,
@@ -16,6 +11,7 @@ const categorySchema = new mongoose.Schema({
     required: true,
   },
 
+  // 기본 제공 카테고리 여부
   isDefault: {
     type: Boolean,
     required: true,
@@ -33,6 +29,13 @@ const categorySchema = new mongoose.Schema({
     default: Date.now,
     required: true,
   },
+
+  parentCategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Categories",
+    default: null,
+    required: false,
+  },
 });
 
 const CategoryModel = mongoose.model(
@@ -40,5 +43,7 @@ const CategoryModel = mongoose.model(
   categorySchema,
   "Categories"
 );
+
+
 
 module.exports = CategoryModel;

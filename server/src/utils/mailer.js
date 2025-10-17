@@ -18,7 +18,7 @@ async function createTransporter() {
   return transporter;
 }
 
-async function sendVerificationEmail({ to, link, code }) {
+async function sendVerificationEmail({ to, link }) {
   const transporter = await createTransporter();
 
   const html = `
