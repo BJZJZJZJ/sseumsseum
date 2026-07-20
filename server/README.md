@@ -1,46 +1,133 @@
 # 💰 씀씀(sseumsseum) - 개인 금융 관리 서비스 백엔드 API
 
-개인의 수입/지출 내역을 관리하고, 예산과 카테고리를 기반으로 대시보드·리포트를 제공하는 **Node.js(Express) 기반 RESTful API 서버**입니다.
-MongoDB Aggregation을 활용해 대시보드·재무 리포트를 계산하며, Swagger로 API 명세를 자동 문서화합니다.
+개인의 수입/지출 내역을 관리하고, 예산·카테고리 기반의 대시보드/리포트를 제공하는 **Node.js(Express) 기반 RESTful API 서버**입니다.
+
+이 문서는 애플리케이션 기능보다 **배포/운영 구조**에 초점을 맞춰 정리했습니다. (백엔드 개발 관점의 상세 기능/API 설명은 [기능 개요](#기능-개요), [API 개요](#api-개요) 섹션 참고)
 
 ---
 
 ## 목차
 
-1. [핵심 기능](#핵심-기능)
-2. [기술 스택](#기술-스택)
-3. [프로젝트 구조](#프로젝트-구조)
-4. [데이터 모델](#데이터-모델)
-5. [개발 환경 설정](#개발-환경-설정)
-6. [실행 스크립트](#실행-스크립트)
-7. [API 개요](#api-개요)
-8. [배포 (CI/CD)](#배포-cicd)
-9. [보안 관련 안내](#보안-관련-안내)
+1. [인프라 & 배포 아키텍처](#인프라--배포-아키텍처)
+2. [CI/CD 파이프라인](#cicd-파이프라인)
+3. [프로세스 관리 (PM2)](#프로세스-관리-pm2)
+4. [기술 스택](#기술-스택)
+5. [기능 개요](#기능-개요)
+6. [프로젝트 구조](#프로젝트-구조)
+7. [데이터 모델](#데이터-모델)
+8. [개발 환경 설정](#개발-환경-설정)
+9. [API 개요](#api-개요)
+10. [운영 관점에서의 회고 / 한계](#운영-관점에서의-회고--한계)
+11. [보안 관련 안내](#보안-관련-안내)
 
 ---
 
-## 핵심 기능
+## 인프라 & 배포 아키텍처
 
-- **인증 / 계정 관리**
-  - JWT(Access/Refresh) 기반 인증, 이메일 인증(회원가입 시 인증 메일 발송·재전송)
-  - 비밀번호 재확인 후 발급되는 별도 토큰(`X-password-token`)을 통한 비밀번호 변경, 회원 탈퇴(하드 삭제)
-- **거래 내역 관리**
-  - 수입/지출 거래 내역 CRUD, 페이지네이션·검색어·기간·유형(수입/지출) 필터링 조회
-  - CSV 파일 일괄 업로드 및 업로드용 템플릿 CSV 다운로드
-- **카테고리 관리**
-  - 대분류(parent)-소분류(child) 계층 구조의 카테고리
-  - 기본 제공 카테고리 조회, 사용자 지정 카테고리 생성/삭제
-- **예산 관리**
-  - 월별 예산 생성/조회/수정/삭제
-  - 예산 대비 실제 지출을 비교하는 예산 리포트 제공
-- **대시보드**
-  - 이번 달/저번 달 지출 비교, 일자별 지출 추이, 카테고리별 지출 Top N, 지출 조언 메시지 제공
-- **재무 리포트**
-  - 월간/연간 단위 수입·지출·순이익 추이 및 카테고리별 집계
-  - 기간 내 상위 지출 항목(Top N) 분석
-  - 특정 대분류의 소분류별 상세 지출 분석
-- **API 문서화**
-  - Swagger(JSDoc 기반) 문서를 `/api-docs` 경로에서 제공하며 Basic Auth로 보호
+```mermaid
+flowchart LR
+    subgraph Client["클라이언트"]
+        Browser["브라우저"]
+    end
+
+    subgraph Firebase["Firebase Hosting"]
+        Static["React SPA (dist)"]
+        Functions["Cloud Functions\n(/api/v1/** 프록시)"]
+    end
+
+    subgraph OCI["OCI Compute Instance"]
+        PM2["PM2\n(sseumsseum 프로세스)"]
+        Express["Express API 서버\n:44445"]
+    end
+
+    subgraph DB["MongoDB"]
+        Mongo["MongoDB\n(단일 인스턴스)"]
+    end
+
+    subgraph CI["GitHub Actions"]
+        Action["OCI-Deploy.yaml"]
+    end
+
+    Browser --> Static
+    Browser --> Functions
+    Functions --> Express
+    PM2 --> Express
+    Express --> Mongo
+
+    Action -- "push to main" --> PM2
+```
+
+- **프론트엔드**: Firebase Hosting에 정적 파일(React SPA)을 배포. `/api/v1/**` 요청은 Firebase Cloud Functions를 통해 백엔드로 라우팅.
+- **백엔드**: OCI(Oracle Cloud Infrastructure) Compute Instance 위에서 Node.js(Express) 프로세스를 PM2로 상시 구동.
+- **데이터베이스**: 별도 관리형 DB 서비스 없이 MongoDB를 단일 인스턴스로 운영 (복제/샤딩 없음).
+- **배포 자동화**: `main` 브랜치 push 시 GitHub Actions가 SSH로 OCI 인스턴스에 접속해 코드 반영 및 프로세스 재시작.
+
+> ⚠️ 현재 OCI 인스턴스는 프로젝트 종료 후 회수되어 운영되지 않습니다. 위 구조는 실제 운영 당시 구성을 기준으로 정리한 것입니다.
+
+---
+
+## CI/CD 파이프라인
+
+`.github/workflows/OCI-Deploy.yaml` 기준, `main` 브랜치에 push되면 다음 단계로 배포가 진행됩니다.
+
+1. **트리거**: `main` 브랜치 push (`AccountBookCICD` 리포지토리 한정으로 조건 분기)
+2. **Checkout**: `actions/checkout@v3`로 소스 체크아웃
+3. **원격 배포 (`appleboy/ssh-action`)**: GitHub Secrets(`OCI_HOST_IP`, `OCI_USERNAME`, `SSH_PRIVATE_KEY`)로 OCI 인스턴스에 SSH 접속 후 아래 스크립트 실행
+   ```bash
+   cd /home/ubuntu/AccountBookCICD
+
+   # nvm으로 Node 22 버전 고정
+   export NVM_DIR="$HOME/.nvm"
+   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+   nvm use 22
+
+   git pull origin main
+   npm install
+
+   # PM2 프로세스 재시작
+   npm restart
+   ```
+
+**설계 포인트**
+- 배포 서버 접근 정보(호스트/계정/SSH 키)를 GitHub Secrets로 분리해 워크플로우 파일에 노출하지 않음.
+- `nvm use 22`로 배포 서버의 Node.js 버전을 명시적으로 고정해, 로컬/CI/운영 간 런타임 버전 불일치를 방지.
+- `if: github.repository == 'BJZJZJZJ/AccountBookCICD'`로 fork된 저장소에서 실수로 워크플로우가 실행되는 것을 방지.
+
+**개선 여지 (알고 있는 한계)**
+- 빌드 산출물 검증(테스트, 린트)이 파이프라인에 없어 `git pull` 이후 바로 배포됨 → 배포 전 검증 단계 부재.
+- SSH 기반의 단일 인스턴스 직접 배포 방식이라, 배포 중 짧은 다운타임이 발생할 수 있음 (무중단 배포 아님).
+- 롤백 전략이 없어, 배포 후 장애 시 이전 커밋으로 수동 되돌리기가 필요함.
+
+---
+
+## 프로세스 관리 (PM2)
+
+`ecosystem.config.js` 기준 프로세스 설정:
+
+```js
+module.exports = {
+  apps: [
+    {
+      name: "sseumsseum",
+      script: "server.js",
+      instances: 1,
+      autorestart: true,
+      env: { NODE_ENV: "production" },
+    },
+  ],
+};
+```
+
+- **인스턴스 수 1개**로 운영되어 프로세스 크래시 시 PM2가 자동 재시작하지만, 클러스터 모드(다중 인스턴스)나 로드밸런싱은 적용되어 있지 않음.
+- `npm start` / `npm stop` / `npm restart` 스크립트로 PM2 명령을 래핑해서 사용 (`package.json` 참고).
+
+| 스크립트 | 내용 |
+| --- | --- |
+| `npm run dev` | 로컬 개발 실행 (`NODE_ENV=development node server.js`) |
+| `npm run dev:prod` | 프로덕션 환경 변수로 로컬 실행 |
+| `npm start` | `pm2 start ecosystem.config.js --env production` |
+| `npm stop` | `pm2 stop sseumsseum` |
+| `npm restart` | `pm2 restart sseumsseum` |
 
 ---
 
@@ -51,13 +138,23 @@ MongoDB Aggregation을 활용해 대시보드·재무 리포트를 계산하며,
 | 런타임/프레임워크 | Node.js, Express 5 |
 | 데이터베이스 | MongoDB (Mongoose) |
 | 인증 | JSON Web Token (jsonwebtoken), bcryptjs |
-| 검증 | express-validator |
-| 파일 업로드/파싱 | multer, csv-parser |
-| 메일 발송 | nodemailer |
+| 프로세스 관리 | PM2 |
+| CI/CD | GitHub Actions (`appleboy/ssh-action`) |
+| 호스팅 | OCI Compute Instance (백엔드), Firebase Hosting/Functions (프론트엔드) |
 | 문서화 | swagger-jsdoc, swagger-ui-express |
 | 요청 제한/보안 | express-rate-limit, express-basic-auth, cors, cookie-parser |
-| 프로세스 관리 | PM2 (ecosystem.config.js) |
-| 배포 | GitHub Actions → OCI(Oracle Cloud Infrastructure) 인스턴스 SSH 배포 |
+
+---
+
+## 기능 개요
+
+애플리케이션 도메인 기능은 다음과 같습니다. (상세 API 명세는 [API 개요](#api-개요) 참고)
+
+- **인증/계정**: JWT(Access/Refresh) 인증, 이메일 인증, 비밀번호 변경/회원 탈퇴
+- **거래 내역**: 수입/지출 CRUD, 필터링·페이지네이션, CSV 일괄 업로드
+- **카테고리**: 대분류-소분류 계층 구조
+- **예산**: 월별 예산 설정 및 지출 대비 리포트
+- **대시보드/리포트**: MongoDB Aggregation(`$lookup`, `$group`, `$facet`)을 활용한 통계 집계
 
 ---
 
@@ -65,43 +162,18 @@ MongoDB Aggregation을 활용해 대시보드·재무 리포트를 계산하며,
 
 ```
 sseumsseum/
-├── server.js                  # 앱 진입점 (express 초기화, 라우터/미들웨어 등록)
+├── server.js                  # 앱 진입점
 ├── ecosystem.config.js        # PM2 배포 설정
+├── .github/workflows/
+│   └── OCI-Deploy.yaml        # CI/CD 파이프라인
 ├── src/
-│   ├── config/
-│   │   ├── index.js           # 환경 변수 로드
-│   │   ├── db.js              # MongoDB 연결
-│   │   └── swagger.js         # Swagger 설정
+│   ├── config/                # 환경 변수, DB 연결, Swagger 설정
 │   ├── controllers/           # 라우트별 비즈니스 로직
-│   │   ├── authController.js
-│   │   ├── userController.js
-│   │   ├── categoryController.js
-│   │   ├── transactionController.js
-│   │   ├── budgetController.js
-│   │   ├── dashboardController.js
-│   │   └── reportController.js
-│   ├── models/                 # Mongoose 스키마
-│   │   ├── User.js
-│   │   ├── Category.js
-│   │   ├── UserCategory.js
-│   │   ├── Transaction.js
-│   │   ├── Budget.js
-│   │   ├── RefreshToken.js
-│   │   └── VerificationToken.js
-│   ├── routes/                 # 라우터 (Swagger 명세 포함)
-│   ├── middleware/
-│   │   ├── authMiddleware.js       # JWT 검증 (Access/Password 토큰)
-│   │   ├── basicAuthMiddlware.js   # /api-docs 보호용 Basic Auth
-│   │   ├── errorHandler.js
-│   │   ├── rateLimit.js            # 메일 재전송/CSV 다운로드 제한
-│   │   └── validator/              # 요청별 유효성 검증 (express-validator)
-│   ├── data/TransactionKeywords.js # CSV 업로드 시 사용되는 키워드 매핑 데이터
-│   └── utils/
-│       ├── jwt.js
-│       ├── password.js
-│       ├── mailer.js
-│       ├── multer.js
-│       └── csvParsing.js
+│   ├── models/                # Mongoose 스키마
+│   ├── routes/                # 라우터 (Swagger 명세 포함)
+│   ├── middleware/             # 인증, Basic Auth, Rate Limit, Validator
+│   ├── data/                  # 정적 데이터 (거래 키워드 매핑)
+│   └── utils/                 # jwt, password, mailer, multer, csv 파싱
 ├── uploads/insertDefaultCategory.js  # 기본 카테고리 시드 스크립트
 └── public/template.csv               # 거래내역 업로드 템플릿
 ```
@@ -113,18 +185,16 @@ sseumsseum/
 | 모델 | 주요 필드 | 설명 |
 | --- | --- | --- |
 | **User** | email, password_hash, role, nickname, birth, gender, verified | 사용자 계정. `role`은 `user`/`admin` |
-| **Category** | name, type, isDefault, parentCategory | `parentCategory`로 대분류-소분류 계층 구현 (null이면 대분류) |
-| **UserCategory** | userId, categoryId | 사용자가 선택/사용 중인 카테고리 매핑 (userId+categoryId 유니크 인덱스) |
-| **Transaction** | userId, categoryId, amount, method, type(income/expense), description, transactionDate | 개별 거래 내역 |
+| **Category** | name, type, isDefault, parentCategory | `parentCategory`로 대분류-소분류 계층 구현 |
+| **UserCategory** | userId, categoryId | 사용자가 선택/사용 중인 카테고리 매핑 |
+| **Transaction** | userId, categoryId, amount, method, type, description, transactionDate | 개별 거래 내역 |
 | **Budget** | userId, month, categories[{categoryId, amount}] | 월 단위 카테고리별 예산 |
-| **RefreshToken** | userId, token, expiresAt, isActive | 리프레시 토큰 관리(로그아웃/비밀번호 변경 시 비활성화) |
-| **VerificationToken** | (이메일 인증/토큰 관련) | 이메일 인증용 토큰 |
+| **RefreshToken** | userId, token, expiresAt, isActive | 리프레시 토큰 관리 |
+| **VerificationToken** | - | 이메일 인증용 토큰 |
 
 ---
 
 ## 개발 환경 설정
-
-### 1. 프로젝트 클론 및 설치
 
 ```bash
 git clone https://github.com/BJZJZJZJ/sseumsseum
@@ -132,10 +202,7 @@ cd sseumsseum
 npm install
 ```
 
-### 2. 환경 변수 설정
-
-`NODE_ENV` 값에 따라 `.env.development` 또는 `.env.production` 파일을 프로젝트 루트에 생성합니다.
-(`src/config/index.js`가 `../../.env.${NODE_ENV}` 경로를 읽습니다.)
+`NODE_ENV` 값에 따라 `.env.development` 또는 `.env.production` 파일을 프로젝트 루트에 생성합니다. (`src/config/index.js`가 `../../.env.${NODE_ENV}` 경로를 읽음)
 
 ```env
 # CORS
@@ -168,39 +235,17 @@ AUTH_USER=<api docs user>
 AUTH_PASSWORD=<api docs password>
 ```
 
-> ⚠️ 위 값은 예시이며 실제 비밀번호/시크릿 값은 반드시 본인 환경에 맞게 새로 발급해서 사용하세요. (자세한 내용은 하단 [보안 관련 안내](#보안-관련-안내) 참고)
-
-### 3. 서버 실행
-
 ```bash
-npm run dev        # 개발 모드 (NODE_ENV=development)
+npm run dev        # 개발 모드
 npm run dev:prod    # 프로덕션 환경 변수로 로컬 실행
-npm start           # PM2로 프로덕션 실행 (ecosystem.config.js)
+npm start           # PM2로 프로덕션 실행
 ```
-
----
-
-## 실행 스크립트
-
-| 스크립트 | 설명 |
-| --- | --- |
-| `npm run dev` | 개발 환경으로 서버 실행 (`node server.js`) |
-| `npm run dev:prod` | 프로덕션 환경 변수로 서버 실행 |
-| `npm start` | PM2로 `sseumsseum` 프로세스 시작 (`ecosystem.config.js`, production) |
-| `npm stop` | PM2 프로세스 중지 |
-| `npm restart` | PM2 프로세스 재시작 |
 
 ---
 
 ## API 개요
 
-서버 실행 후 아래 주소에서 전체 API 명세(Swagger)를 확인할 수 있습니다. (Basic Auth로 보호됨)
-
-```
-http://localhost:{PORT}/api-docs
-```
-
-모든 API는 `/api/v1` 하위 경로를 기준으로 합니다.
+서버 실행 후 `http://localhost:{PORT}/api-docs`에서 Swagger 문서를 확인할 수 있습니다 (Basic Auth로 보호). 모든 API는 `/api/v1` 하위 경로를 기준으로 합니다.
 
 | 리소스 | Base Path | 주요 엔드포인트 |
 | --- | --- | --- |
@@ -210,27 +255,24 @@ http://localhost:{PORT}/api-docs
 | 거래 내역 | `/api/v1/transactions` | `GET /`, `POST /`, `PUT /:id`, `DELETE /:id`, `POST /upload`, `GET /template` |
 | 예산 | `/api/v1/budgets` | `GET /`, `POST /`, `PUT /:id`, `DELETE /:id`, `GET /report` |
 | 대시보드 | `/api/v1/dashboard` | `GET /` |
-| 리포트 | `/api/v1/reports` | `GET /` (재무 추이), `GET /top-spending`, `GET /category-detail` |
-
-인증이 필요한 엔드포인트는 `Authorization: Bearer {accessToken}` 헤더가 필요합니다.
-비밀번호 변경/회원 탈퇴는 `POST /users/me/password`로 발급받은 별도의 Password Token이 필요합니다.
+| 리포트 | `/api/v1/reports` | `GET /`, `GET /top-spending`, `GET /category-detail` |
 
 ---
 
-## 배포 (CI/CD)
+## 운영 관점에서의 회고 / 한계
 
-`main` 브랜치에 push되면 GitHub Actions(`.github/workflows/OCI-Deploy.yaml`)가 동작하여, SSH로 OCI(Oracle Cloud Infrastructure) 인스턴스에 접속해 `git pull` → `npm install` → PM2 재시작(`npm restart`)을 수행합니다.
+실제로 인프라를 구성/운영해본 경험을 바탕으로, 이 프로젝트에서 아쉬웠던 지점을 정리했습니다.
+
+- **컨테이너화 미적용**: Docker 이미지가 없어 배포 서버(OCI)에 Node.js/nvm을 직접 설치하고 의존하는 구조. 환경 재현성이 낮고, 서버를 새로 구성할 때마다 수동 설정이 필요했음.
+- **단일 인스턴스 구조**: 애플리케이션 서버·MongoDB 모두 단일 인스턴스로 운영되어 장애/트래픽 증가에 대한 여유가 없음. 무중단 배포, 오토스케일링, DB 이중화 등이 적용되지 않음.
+- **모니터링/로깅 부재**: PM2 기본 로그 외에 별도의 중앙 로깅이나 알림(예: 헬스체크 실패 알림) 체계가 없어, 장애를 사후에 인지하는 구조였음.
+- **배포 파이프라인에 검증 단계 부재**: 테스트/린트 없이 `git pull` 즉시 배포되는 구조라, 배포 전 자동 검증이 없었음.
+- **인프라를 코드로 관리하지 않음(No IaC)**: OCI 인스턴스 설정을 수동으로 구성해, 설정 변경 이력 추적이나 재현이 어려웠음.
+
+> 이후 다시 다룬다면 Docker 기반 컨테이너화, GitHub Actions에 테스트 단계 추가, 헬스체크 기반 모니터링 도입을 우선순위로 개선하고 싶습니다.
 
 ---
+
 ## 보안 관련 안내
- 
+
 `.env.development`, `.env.production` 파일은 `.gitignore`에 포함되어 Git 저장소에는 커밋되지 않았습니다. 이 README의 환경 변수 예시는 실제 값이 아닌 placeholder입니다.
- 
----
-
-
-## 기술적 포인트 (참고)
-
-- **대시보드/리포트 집계:** MongoDB Aggregation(`$lookup`, `$group`, `$facet` 등)을 활용해 다수의 통계를 최소한의 쿼리로 계산하도록 설계되어 있습니다.
-- **계층형 카테고리:** `Category.parentCategory` 필드로 대분류-소분류 관계를 표현하며, 리포트에서는 소분류 지출을 대분류 기준으로 재그룹화합니다.
-- **CSV 일괄 업로드:** `multer`로 파일을 받아 `csv-parser`로 파싱 후, 행 단위 유효성 검증과 함께 실패한 행에 대한 에러 목록을 응답에 포함합니다.
