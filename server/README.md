@@ -222,17 +222,12 @@ http://localhost:{PORT}/api-docs
 `main` 브랜치에 push되면 GitHub Actions(`.github/workflows/OCI-Deploy.yaml`)가 동작하여, SSH로 OCI(Oracle Cloud Infrastructure) 인스턴스에 접속해 `git pull` → `npm install` → PM2 재시작(`npm restart`)을 수행합니다.
 
 ---
-
 ## 보안 관련 안내
-
-업로드해주신 프로젝트에 **`.env.development`, `.env.production` 파일에 실제 DB 비밀번호, JWT 시크릿, SMTP 비밀번호, Basic Auth 계정 정보가 평문으로 포함**되어 있었습니다. 이 README에는 해당 값들을 예시(placeholder)로만 표기했고 실제 값은 옮기지 않았습니다.
-
-혹시 이 값들이 이미 GitHub 등 공개 저장소에 커밋되어 있다면:
-
-- `.env.*` 파일이 `.gitignore`에 포함되어 있는지 확인하고(현재 `.gitignore`는 있으나 실제로 추적 제외되고 있는지 `git status`로 재확인 권장)
-- 이미 커밋된 이력이 있다면 **DB 비밀번호, JWT 시크릿, SMTP 비밀번호, Basic Auth 계정** 정보를 모두 새로 발급/변경하시는 것을 권장드립니다.
-
+ 
+`.env.development`, `.env.production` 파일은 `.gitignore`에 포함되어 Git 저장소에는 커밋되지 않았습니다. 이 README의 환경 변수 예시는 실제 값이 아닌 placeholder입니다.
+ 
 ---
+
 
 ## 기술적 포인트 (참고)
 
